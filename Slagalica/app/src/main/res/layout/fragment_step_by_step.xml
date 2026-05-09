@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".StepByStepFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/korak_po_korak_title"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:id="@+id/roundText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Runda: 1/2"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/timerText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/timer_placeholder"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/playerTurnText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Na potezu: Igrač 1"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:id="@+id/stepOneText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_1"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepTwoText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_2"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepThreeText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_3"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepFourText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_4"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepFiveText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_5"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepSixText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_6"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/stepSevenText"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/step_7"
+            android:gravity="center"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="24dp" />
+
+        <EditText
+            android:id="@+id/answerInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/answer_hint"
+            android:inputType="text"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/submitAnswerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/submit_answer"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/score_label"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/playerOneScoreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/player_one_score"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/playerTwoScoreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/player_two_score"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+</ScrollView>

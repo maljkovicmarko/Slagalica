@@ -100,4 +100,36 @@
 
     <string name="notifications">Obaveštenja</string>
 
+    <string name="korak_po_korak_title">Korak po korak</string>
+
+    <string name="round_label">Runda</string>
+
+    <string name="player_turn_label">Na potezu</string>
+
+    <string name="timer_placeholder">70s</string>
+
+    <string name="answer_hint">Unesi konačan pojam</string>
+
+    <string name="submit_answer">Potvrdi odgovor</string>
+
+    <string name="score_label">Rezultat</string>
+
+    <string name="player_one_score">Igrač 1: 0</string>
+
+    <string name="player_two_score">Igrač 2: 0</string>
+
+    <string name="step_1">Korak 1</string>
+
+    <string name="step_2">Korak 2</string>
+
+    <string name="step_3">Korak 3</string>
+
+    <string name="step_4">Korak 4</string>
+
+    <string name="step_5">Korak 5</string>
+
+    <string name="step_6">Korak 6</string>
+
+    <string name="step_7">Korak 7</string>
+
 </resources>
