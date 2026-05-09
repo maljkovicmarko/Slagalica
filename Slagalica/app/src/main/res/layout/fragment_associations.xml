@@ -76,11 +76,11 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/finalSolutionButton"
+        <EditText
+            android:id="@+id/finalSolutionInput"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:text="???"
+            android:text="Konačno rešenje"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
 
