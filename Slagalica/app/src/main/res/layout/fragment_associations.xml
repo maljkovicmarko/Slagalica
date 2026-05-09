@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AssociationsFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/asocijacije_title"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/timerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="120s"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/playerTurnText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Na potezu: Igrač 1"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp">
+
+                <Button android:id="@+id/a1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A1" />
+                <Button android:id="@+id/a2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A2" />
+                <Button android:id="@+id/a3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A3" />
+                <Button android:id="@+id/a4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A4" />
+                <Button android:id="@+id/columnASolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="A" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="4dp">
+
+                <Button android:id="@+id/b1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B1" />
+                <Button android:id="@+id/b2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B2" />
+                <Button android:id="@+id/b3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B3" />
+                <Button android:id="@+id/b4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B4" />
+                <Button android:id="@+id/columnBSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="B" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/finalSolutionButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="???"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp">
+
+                <Button android:id="@+id/columnCSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="C" />
+                <Button android:id="@+id/c1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C1" />
+                <Button android:id="@+id/c2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C2" />
+                <Button android:id="@+id/c3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C3" />
+                <Button android:id="@+id/c4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C4" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="4dp">
+
+                <Button android:id="@+id/columnDSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="D" />
+                <Button android:id="@+id/d1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D1" />
+                <Button android:id="@+id/d2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D2" />
+                <Button android:id="@+id/d3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D3" />
+                <Button android:id="@+id/d4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D4" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/finalSolutionInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/final_solution_hint"
+            android:inputType="text"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/guessFinalSolutionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/guess_final_solution"
+            android:layout_marginBottom="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/score_label"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/playerOneScoreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/player_one_score"
+            android:textSize="18sp"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/playerTwoScoreText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/player_two_score"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+</ScrollView>

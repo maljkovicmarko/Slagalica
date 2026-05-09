@@ -176,4 +176,30 @@
 
     <string name="confirm_connection">Potvrdi povezivanje</string>
 
+    <string name="a1">A1</string>
+    <string name="a2">A2</string>
+    <string name="a3">A3</string>
+    <string name="a4">A4</string>
+
+    <string name="b1">B1</string>
+    <string name="b2">B2</string>
+    <string name="b3">B3</string>
+    <string name="b4">B4</string>
+
+    <string name="c1">C1</string>
+    <string name="c2">C2</string>
+    <string name="c3">C3</string>
+    <string name="c4">C4</string>
+
+    <string name="d1">D1</string>
+    <string name="d2">D2</string>
+    <string name="d3">D3</string>
+    <string name="d4">D4</string>
+
+    <string name="column_a_solution">A</string>
+    <string name="column_b_solution">B</string>
+    <string name="column_c_solution">C</string>
+    <string name="column_d_solution">D</string>
+
+    <string name="final_solution_placeholder">Konačno rešenje</string>
 </resources>
