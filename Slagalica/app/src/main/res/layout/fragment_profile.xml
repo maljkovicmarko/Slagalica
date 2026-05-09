@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ProfileFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/profile_title"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp" />
+
+        <ImageView
+            android:id="@+id/avatarImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@mipmap/ic_launcher"
+            android:background="@android:color/darker_gray"
+            android:padding="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/changeAvatarButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/change_avatar"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/username_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/usernameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Marko"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/email_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/emailText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="markomaljak@gmail.com"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tokens_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tokensText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="120"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/stars_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/starsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="340"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/league_label"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:id="@+id/leagueIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@mipmap/ic_launcher"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/leagueText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Liga" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/region_label"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/regionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Srbija"
+            android:layout_marginBottom="24dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/qr_code_label"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <ImageView
+            android:id="@+id/qrCodeImage"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@mipmap/ic_launcher"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp"
+            android:layout_marginBottom="32dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/statistics_title"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/gameSuccessText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/game_success"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/koZnaZnaText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ko_zna_zna_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/mojBrojText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/moj_broj_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/korakPoKorakText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/korak_po_korak_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/asocijacijeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/asocijacije_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/skockoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/skocko_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/spojniceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/spojnice_stat"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/playedGamesText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/played_games"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/winsLossesText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wins_losses"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/logout" />
+
+    </LinearLayout>
+
+</ScrollView>
