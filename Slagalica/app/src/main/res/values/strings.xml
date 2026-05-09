@@ -164,4 +164,16 @@
 
     <string name="next_question">Sledeće pitanje</string>
 
+    <string name="spojnice_title">Spojnice</string>
+
+    <string name="criterion_label">Kriterijum</string>
+
+    <string name="criterion_placeholder">Poveži pojmove iz leve i desne kolone</string>
+
+    <string name="left_column_label">Leva kolona</string>
+
+    <string name="right_column_label">Desna kolona</string>
+
+    <string name="confirm_connection">Potvrdi povezivanje</string>
+
 </resources>
