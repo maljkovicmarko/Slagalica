@@ -47,7 +47,57 @@
     <string name="registration_success">Uspešna registracija</string>
 
     <string name="login_prompt">Već imaš nalog? Prijavi se</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="profile_title">Profil korisnika</string>
+
+    <string name="change_avatar">Izmeni avatar</string>
+
+    <string name="username_label">Korisničko ime</string>
+
+    <string name="email_label">Email adresa</string>
+
+    <string name="tokens_label">Broj tokena</string>
+
+    <string name="stars_label">Ukupan broj zvezda</string>
+
+    <string name="league_label">Liga</string>
+
+    <string name="region_label">Region</string>
+
+    <string name="qr_code_label">QR kod za poziv prijatelja</string>
+
+    <string name="statistics_title">Statistika igrača</string>
+
+    <string name="played_games">Ukupan broj odigranih partija</string>
+
+    <string name="wins_losses">Pobede / Porazi</string>
+
+    <string name="game_success">Uspešnost po igrama</string>
+
+    <string name="ko_zna_zna_stat">Ko zna zna: pogođena / promašena pitanja</string>
+
+    <string name="moj_broj_stat">Moj broj: procenat tačnog broja</string>
+
+    <string name="korak_po_korak_stat">Korak po korak: uspešnost po koraku</string>
+
+    <string name="asocijacije_stat">Asocijacije: rešene / nerešene</string>
+
+    <string name="skocko_stat">Skočko: uspešnost po pokušaju</string>
+
+    <string name="spojnice_stat">Spojnice: uspešno povezani pojmovi</string>
+
+    <string name="logout">Odjavi se</string>
+
+    <string name="home_title">Početna</string>
+
+    <string name="home_subtitle">Izaberi opciju</string>
+
+    <string name="profile">Profil</string>
+
+    <string name="play_game">Igraj igru</string>
+
+    <string name="notifications">Obaveštenja</string>
 
 </resources>
