@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    tools:context=".GeneralKnowledgeFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/ko_zna_zna_title"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:id="@+id/timerText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="5s"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/questionCounterText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/question_counter"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:id="@+id/questionText"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:text="@string/question_placeholder"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@android:color/darker_gray"
+        android:padding="16dp"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/answerAButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/answer_a"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/answerBButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/answer_b"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/answerCButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/answer_c"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/answerDButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/answer_d"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/nextQuestionButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/next_question"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/score_label"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/playerOneScoreText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/player_one_score"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/playerTwoScoreText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/player_two_score"
+        android:textSize="18sp" />
+
+</LinearLayout>
