@@ -132,4 +132,20 @@
 
     <string name="step_7">Korak 7</string>
 
+    <string name="moj_broj_title">Moj broj</string>
+
+    <string name="target_number_label">Traženi broj</string>
+
+    <string name="numbers_label">Brojevi</string>
+
+    <string name="stop">Stop</string>
+
+    <string name="expression_hint">Unesi izraz</string>
+
+    <string name="expression_label">Izraz</string>
+
+    <string name="clear">Obriši</string>
+
+    <string name="submit_expression">Potvrdi izraz</string>
+
 </resources>
