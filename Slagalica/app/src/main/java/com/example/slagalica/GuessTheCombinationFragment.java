@@ -11,10 +11,10 @@ import android.widget.Button;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link FindTheNumberFragment#newInstance} factory method to
+ * Use the {@link GuessTheCombinationFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class FindTheNumberFragment extends Fragment {
+public class GuessTheCombinationFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -25,9 +25,9 @@ public class FindTheNumberFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private Button submitExpressionButton;
+    private Button checkCombinationButton;
 
-    public FindTheNumberFragment() {
+    public GuessTheCombinationFragment() {
         // Required empty public constructor
     }
 
@@ -37,11 +37,11 @@ public class FindTheNumberFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment FindTheNumberFragment.
+     * @return A new instance of fragment GuessTheCombinationFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static FindTheNumberFragment newInstance(String param1, String param2) {
-        FindTheNumberFragment fragment = new FindTheNumberFragment();
+    public static GuessTheCombinationFragment newInstance(String param1, String param2) {
+        GuessTheCombinationFragment fragment = new GuessTheCombinationFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -62,17 +62,17 @@ public class FindTheNumberFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_find_the_number, container, false);
+        View view = inflater.inflate(R.layout.fragment_guess_the_combination, container, false);
 
-//        submitExpressionButton = view.findViewById(R.id.submitExpressionButton);
-//
-//        submitExpressionButton.setOnClickListener(v -> {
-//            requireActivity()
-//                    .getSupportFragmentManager()
-//                    .beginTransaction()
-//                    .replace(R.id.fragmentContainer, new ConnectingGameFragment())
-//                    .commit();
-//        });
+        checkCombinationButton = view.findViewById(R.id.checkCombinationButton);
+
+        checkCombinationButton.setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new StepByStepFragment())
+                    .commit();
+        });
 
         return view;
     }

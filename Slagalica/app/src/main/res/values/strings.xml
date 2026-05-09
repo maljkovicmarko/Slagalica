@@ -84,6 +84,12 @@
 
     <string name="asocijacije_stat">Asocijacije: rešene / nerešene</string>
 
+    <string name="asocijacije_title">Asocijacije</string>
+
+    <string name="final_solution_hint">Rešenje </string>
+
+    <string name="guess_final_solution">Konačno rešenje</string>
+
     <string name="skocko_stat">Skočko: uspešnost po pokušaju</string>
 
     <string name="spojnice_stat">Spojnice: uspešno povezani pojmovi</string>
@@ -202,4 +208,30 @@
     <string name="column_d_solution">D</string>
 
     <string name="final_solution_placeholder">Konačno rešenje</string>
+
+    <string name="skocko_title">Skočko</string>
+
+    <string name="attempts_label">Pokušaji</string>
+
+    <string name="symbols_label">Izaberi znak</string>
+
+    <string name="check_combination">Proveri kombinaciju</string>
+
+    <string name="symbol_skocko">Skočko</string>
+
+    <string name="symbol_square">Kvadrat</string>
+
+    <string name="symbol_circle">Krug</string>
+
+    <string name="symbol_heart">Srce</string>
+
+    <string name="symbol_triangle">Trougao</string>
+
+    <string name="symbol_star">Zvezda</string>
+
+    <string name="symbol_placeholder">SIM</string>
+
+    <string name="result_placeholder">RES</string>
+
+    <string name="finalSolutionInput">Konačno rešenje</string>
 </resources>
