@@ -1,3 +1,25 @@
 <resources>
+
     <string name="app_name">Slagalica</string>
+
+    <string name="login_title">Slagalica</string>
+
+    <string name="username_or_email">Mejl ili korisničko ime</string>
+
+    <string name="password">Lozinka</string>
+
+    <string name="login">Prijavi se</string>
+
+    <string name="register_prompt">Nemaš nalog? Registruj se</string>
+
+    <string name="username_required">
+        Unesite mejl ili korisničko ime
+    </string>
+
+    <string name="password_required">
+        Unesite lozinku
+    </string>
+
+    <string name="login_success">Uspešna prijava</string>
+
 </resources>
