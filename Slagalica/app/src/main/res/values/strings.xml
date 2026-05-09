@@ -148,4 +148,20 @@
 
     <string name="submit_expression">Potvrdi izraz</string>
 
+    <string name="ko_zna_zna_title">Ko zna zna</string>
+
+    <string name="question_counter">Pitanje 1/5</string>
+
+    <string name="question_placeholder">Tekst pitanja</string>
+
+    <string name="answer_a">Odgovor A</string>
+
+    <string name="answer_b">Odgovor B</string>
+
+    <string name="answer_c">Odgovor C</string>
+
+    <string name="answer_d">Odgovor D</string>
+
+    <string name="next_question">Sledeće pitanje</string>
+
 </resources>
