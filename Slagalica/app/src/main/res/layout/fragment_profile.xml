@@ -11,6 +11,16 @@
         android:orientation="vertical"
         android:padding="24dp">
 
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/menu_icon"
+            android:background="@android:color/transparent"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/menu" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
