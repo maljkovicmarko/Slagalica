@@ -7,15 +7,13 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
+ * Use the {@link NavbarFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class NavbarFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,13 +24,7 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private Button profileButton;
-    private Button playGameButton;
-    private Button notificationsButton;
-
-    private ImageButton menuButton;
-
-    public HomeFragment() {
+    public NavbarFragment() {
         // Required empty public constructor
     }
 
@@ -42,11 +34,11 @@ public class HomeFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
+     * @return A new instance of fragment NavbarFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
+    public static NavbarFragment newInstance(String param1, String param2) {
+        NavbarFragment fragment = new NavbarFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -66,33 +58,42 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-        profileButton = view.findViewById(R.id.profileButton);
-        playGameButton = view.findViewById(R.id.playGameButton);
-        notificationsButton = view.findViewById(R.id.notificationsButton);
-        menuButton = view.findViewById(R.id.menuButton);
-        menuButton.setVisibility(View.VISIBLE);
 
-        profileButton.setOnClickListener(v -> {
+        View view = inflater.inflate(R.layout.fragment_navbar, container, false);
+
+        view.findViewById(R.id.nav_home).setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new HomeFragment())
+                    .addToBackStack(null)
+                    .commit();
+
+            ((MainActivity) requireActivity()).toggleNavbar();
+        });
+
+        view.findViewById(R.id.nav_profile).setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragmentContainer, new ProfileFragment())
                     .addToBackStack(null)
                     .commit();
-        });
-        playGameButton.setOnClickListener(v -> {
-        requireActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragmentContainer, new GeneralKnowledgeFragment())
-                .commit();
-        });
-        menuButton.setOnClickListener(v -> {
-            System.out.println("Listener entered");
+
             ((MainActivity) requireActivity()).toggleNavbar();
         });
+
+        view.findViewById(R.id.nav_logout).setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new LoginFragment())
+                    .commit();
+
+            ((MainActivity) requireActivity()).toggleNavbar();
+        });
+
         return view;
     }
+
 }

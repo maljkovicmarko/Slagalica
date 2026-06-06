@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,6 +28,8 @@ public class ProfileFragment extends Fragment {
     private String mParam2;
 
     private Button logoutButton;
+
+    private ImageButton menuButton;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -64,8 +67,11 @@ public class ProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        logoutButton = view.findViewById(R.id.logoutButton);
+        menuButton = view.findViewById(R.id.menuButton);
 
         logoutButton = view.findViewById(R.id.logoutButton);
+        menuButton.setVisibility(View.VISIBLE);
 
         logoutButton.setOnClickListener(v -> {
             requireActivity()
@@ -79,6 +85,10 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+        menuButton.setOnClickListener(v -> {
+            System.out.println("Listener entered");
+            ((MainActivity) requireActivity()).toggleNavbar();
+        });
         return view;
     }
 }

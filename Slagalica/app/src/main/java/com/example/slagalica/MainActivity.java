@@ -1,6 +1,7 @@
 package com.example.slagalica;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +27,31 @@ public class MainActivity extends AppCompatActivity {
                     .beginTransaction()
                     .replace(R.id.fragmentContainer, new LoginFragment())
                     .commit();
+        }
+
+        View overlay = findViewById(R.id.navbarOverlay);
+        overlay.setOnClickListener(v -> {
+            System.out.println("Overlay clicked");
+            toggleNavbar();
+        });
+    }
+
+    public void toggleNavbar() {
+        View navbar = findViewById(R.id.navbarFragment);
+        View overlay = findViewById(R.id.navbarOverlay);
+
+        System.out.println("Navbar visibility: " + navbar.getVisibility());
+        System.out.println("Overlay visibility: " + overlay.getVisibility());
+
+        if (navbar.getVisibility() == View.VISIBLE) {
+            navbar.setVisibility(View.GONE);
+            overlay.setVisibility(View.GONE);
+        } else {
+            overlay.setVisibility(View.VISIBLE);
+            navbar.setVisibility(View.VISIBLE);
+
+            overlay.bringToFront();
+            navbar.bringToFront();
         }
     }
 }

@@ -234,4 +234,14 @@
     <string name="result_placeholder">RES</string>
 
     <string name="finalSolutionInput">Konačno rešenje</string>
+
+    <string name="nav_home">Home</string>
+
+    <string name="nav_profile">Profile</string>
+
+    <string name="nav_stats">Stats</string>
+
+    <string name="nav_logout">Logout</string>
+
+    <string name="menu">Menu</string>
 </resources>
