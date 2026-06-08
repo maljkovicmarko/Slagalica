@@ -1,19 +1,24 @@
-package com.example.slagalica;
+package com.example.slagalica.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
+import com.example.slagalica.Activities.MainActivity;
+import com.example.slagalica.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link NavbarFragment#newInstance} factory method to
+ * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NavbarFragment extends Fragment {
+public class ProfileFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,7 +29,11 @@ public class NavbarFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public NavbarFragment() {
+    private Button logoutButton;
+
+    private ImageButton menuButton;
+
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
@@ -34,11 +43,11 @@ public class NavbarFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment NavbarFragment.
+     * @return A new instance of fragment ProfileFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static NavbarFragment newInstance(String param1, String param2) {
-        NavbarFragment fragment = new NavbarFragment();
+    public static ProfileFragment newInstance(String param1, String param2) {
+        ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -59,41 +68,29 @@ public class NavbarFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_navbar, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        logoutButton = view.findViewById(R.id.logoutButton);
+        menuButton = view.findViewById(R.id.menuButton);
 
-        view.findViewById(R.id.nav_home).setOnClickListener(v -> {
+        logoutButton = view.findViewById(R.id.logoutButton);
+        menuButton.setVisibility(View.VISIBLE);
+
+        logoutButton.setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new HomeFragment())
-                    .addToBackStack(null)
-                    .commit();
+                    .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-            ((MainActivity) requireActivity()).toggleNavbar();
-        });
-
-        view.findViewById(R.id.nav_profile).setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new ProfileFragment())
-                    .addToBackStack(null)
-                    .commit();
-
-            ((MainActivity) requireActivity()).toggleNavbar();
-        });
-
-        view.findViewById(R.id.nav_logout).setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragmentContainer, new LoginFragment())
                     .commit();
-
-            ((MainActivity) requireActivity()).toggleNavbar();
         });
 
+        menuButton.setOnClickListener(v -> {
+            System.out.println("Listener entered");
+            ((MainActivity) requireActivity()).toggleNavbar();
+        });
         return view;
     }
-
 }

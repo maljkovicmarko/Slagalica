@@ -1,37 +1,34 @@
-package com.example.slagalica;
+package com.example.slagalica.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+
+import androidx.fragment.app.Fragment;
+
+import com.example.slagalica.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ProfileFragment#newInstance} factory method to
+ * Use the {@link ConnectingGameFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileFragment extends Fragment {
+public class ConnectingGameFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
+    private Button confirmConnectionButton;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    private Button logoutButton;
 
-    private ImageButton menuButton;
-
-    public ProfileFragment() {
+    public ConnectingGameFragment() {
         // Required empty public constructor
     }
 
@@ -41,11 +38,11 @@ public class ProfileFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment ProfileFragment.
+     * @return A new instance of fragment ConnectingGameFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static ProfileFragment newInstance(String param1, String param2) {
-        ProfileFragment fragment = new ProfileFragment();
+    public static ConnectingGameFragment newInstance(String param1, String param2) {
+        ConnectingGameFragment fragment = new ConnectingGameFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -65,30 +62,19 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_connecting_game, container, false);
 
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
-        logoutButton = view.findViewById(R.id.logoutButton);
-        menuButton = view.findViewById(R.id.menuButton);
+         confirmConnectionButton = view.findViewById(R.id.confirmConnectionButton);
 
-        logoutButton = view.findViewById(R.id.logoutButton);
-        menuButton.setVisibility(View.VISIBLE);
-
-        logoutButton.setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-
+        confirmConnectionButton.setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragmentContainer, new LoginFragment())
+                    .replace(R.id.fragmentContainer, new AssociationsFragment())
                     .commit();
         });
 
-        menuButton.setOnClickListener(v -> {
-            System.out.println("Listener entered");
-            ((MainActivity) requireActivity()).toggleNavbar();
-        });
         return view;
     }
 }
