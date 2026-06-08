@@ -1,20 +1,22 @@
-package com.example.slagalica;
+package com.example.slagalica.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.fragment.app.Fragment;
+
+import com.example.slagalica.Activities.MainActivity;
+import com.example.slagalica.R;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link GuessTheCombinationFragment#newInstance} factory method to
+ * Use the {@link GeneralKnowledgeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class GuessTheCombinationFragment extends Fragment {
+public class GeneralKnowledgeFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -25,9 +27,9 @@ public class GuessTheCombinationFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private Button checkCombinationButton;
+    private Button nextQuestionButton;
 
-    public GuessTheCombinationFragment() {
+    public GeneralKnowledgeFragment() {
         // Required empty public constructor
     }
 
@@ -37,11 +39,11 @@ public class GuessTheCombinationFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment GuessTheCombinationFragment.
+     * @return A new instance of fragment GeneralKnowledgeFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static GuessTheCombinationFragment newInstance(String param1, String param2) {
-        GuessTheCombinationFragment fragment = new GuessTheCombinationFragment();
+    public static GeneralKnowledgeFragment newInstance(String param1, String param2) {
+        GeneralKnowledgeFragment fragment = new GeneralKnowledgeFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -62,15 +64,15 @@ public class GuessTheCombinationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_guess_the_combination, container, false);
+        View view = inflater.inflate(R.layout.fragment_general_knowledge, container, false);
+        ((MainActivity) requireActivity()).toggleNavbar();
+        nextQuestionButton = view.findViewById(R.id.nextQuestionButton);
 
-        checkCombinationButton = view.findViewById(R.id.checkCombinationButton);
-
-        checkCombinationButton.setOnClickListener(v -> {
+        nextQuestionButton.setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragmentContainer, new StepByStepFragment())
+                    .replace(R.id.fragmentContainer, new ConnectingGameFragment())
                     .commit();
         });
 

@@ -1,21 +1,21 @@
-package com.example.slagalica;
+package com.example.slagalica.Fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
+
+import androidx.fragment.app.Fragment;
+
+import com.example.slagalica.R;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
+ * Use the {@link GuessTheCombinationFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class GuessTheCombinationFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,13 +26,9 @@ public class HomeFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    private Button profileButton;
-    private Button playGameButton;
-    private Button notificationsButton;
+    private Button checkCombinationButton;
 
-    private ImageButton menuButton;
-
-    public HomeFragment() {
+    public GuessTheCombinationFragment() {
         // Required empty public constructor
     }
 
@@ -42,11 +38,11 @@ public class HomeFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
+     * @return A new instance of fragment GuessTheCombinationFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
+    public static GuessTheCombinationFragment newInstance(String param1, String param2) {
+        GuessTheCombinationFragment fragment = new GuessTheCombinationFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -67,32 +63,18 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-        profileButton = view.findViewById(R.id.profileButton);
-        playGameButton = view.findViewById(R.id.playGameButton);
-        notificationsButton = view.findViewById(R.id.notificationsButton);
-        menuButton = view.findViewById(R.id.menuButton);
-        menuButton.setVisibility(View.VISIBLE);
+        View view = inflater.inflate(R.layout.fragment_guess_the_combination, container, false);
 
-        profileButton.setOnClickListener(v -> {
+        checkCombinationButton = view.findViewById(R.id.checkCombinationButton);
+
+        checkCombinationButton.setOnClickListener(v -> {
             requireActivity()
                     .getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragmentContainer, new ProfileFragment())
-                    .addToBackStack(null)
+                    .replace(R.id.fragmentContainer, new StepByStepFragment())
                     .commit();
         });
-        playGameButton.setOnClickListener(v -> {
-        requireActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragmentContainer, new GeneralKnowledgeFragment())
-                .commit();
-        });
-        menuButton.setOnClickListener(v -> {
-            System.out.println("Listener entered");
-            ((MainActivity) requireActivity()).toggleNavbar();
-        });
+
         return view;
     }
 }

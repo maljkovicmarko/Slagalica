@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".Activities.MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
@@ -32,7 +32,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/navbarFragment"
-        android:name="com.example.slagalica.NavbarFragment"
+        android:name="com.example.slagalica.Fragments.NavbarFragment"
         android:layout_width="90dp"
         android:layout_height="0dp"
         android:visibility="gone"
