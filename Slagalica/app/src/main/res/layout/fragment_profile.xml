@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileFragment">
+    tools:context="Fragments.ProfileFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -117,7 +117,7 @@
                 android:id="@+id/leagueIcon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@mipmap/ic_launcher"
+                android:src="@drawable/bronze_icon"
                 android:layout_marginEnd="8dp" />
 
             <TextView

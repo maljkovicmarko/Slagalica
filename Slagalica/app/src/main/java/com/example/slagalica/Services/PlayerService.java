@@ -3,6 +3,7 @@ package com.example.slagalica.Services;
 import android.util.Log;
 
 import com.example.slagalica.Model.Player;
+import com.example.slagalica.Model.PlayerStatistics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -65,6 +66,11 @@ public class PlayerService {
                             region
                     );
 
+                    player.setTokens(120);
+                    player.setTotalStars(340);
+                    player.setLeagueName("Bronze League");
+                    player.setStatistics(createDummyStatistics());
+
                     db.collection("players")
                             .document(firebaseUser.getUid())
                             .set(player)
@@ -122,6 +128,23 @@ public class PlayerService {
         }
     }
 
+    public void updateAvatarBase64(String avatarBase64,
+                                   Runnable onSuccess,
+                                   OnFailureCallback onFailure) {
+
+        FirebaseUser firebaseUser = auth.getCurrentUser();
+
+        if (firebaseUser == null) {
+            onFailure.onFailure("User is not logged in");
+            return;
+        }
+
+        db.collection("players")
+                .document(firebaseUser.getUid())
+                .update("avatarBase64", avatarBase64)
+                .addOnSuccessListener(unused -> onSuccess.run())
+                .addOnFailureListener(e -> onFailure.onFailure(e.getMessage()));
+    }
     private void signInWithEmail(String email,
                                  String password,
                                  Runnable onSuccess,
@@ -148,5 +171,39 @@ public class PlayerService {
                             .addOnFailureListener(e -> onFailure.onFailure(e.getMessage()));
                 })
                 .addOnFailureListener(e -> onFailure.onFailure(e.getMessage()));
+    }
+
+    private PlayerStatistics createDummyStatistics() {
+        PlayerStatistics statistics = new PlayerStatistics();
+
+        statistics.setKoZnaZnaAverageScore(75.5);
+        statistics.setKoZnaZnaHitMissRatio(0.78);
+
+        statistics.setMojBrojSuccessPercentage(62.0);
+
+        statistics.setKorakPoKorakStep1Percentage(90.0);
+        statistics.setKorakPoKorakStep2Percentage(82.0);
+        statistics.setKorakPoKorakStep3Percentage(74.0);
+        statistics.setKorakPoKorakStep4Percentage(65.0);
+        statistics.setKorakPoKorakStep5Percentage(53.0);
+        statistics.setKorakPoKorakStep6Percentage(41.0);
+        statistics.setKorakPoKorakFinalPercentage(35.0);
+
+        statistics.setAsocijacijeSolvedRatio(0.57);
+
+        statistics.setSkockoAttempt1Percentage(12.0);
+        statistics.setSkockoAttempt2Percentage(24.0);
+        statistics.setSkockoAttempt3Percentage(39.0);
+        statistics.setSkockoAttempt4Percentage(48.0);
+        statistics.setSkockoAttempt5Percentage(61.0);
+        statistics.setSkockoAttempt6Percentage(70.0);
+
+        statistics.setSpojniceSuccessPercentage(84.0);
+
+        statistics.setTotalGamesPlayed(120);
+        statistics.setTotalGamesWon(73);
+        statistics.setTotalGamesLost(47);
+
+        return statistics;
     }
 }
