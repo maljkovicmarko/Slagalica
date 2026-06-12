@@ -95,6 +95,15 @@ public class HomeFragment extends Fragment {
             System.out.println("Listener entered");
             ((MainActivity) requireActivity()).toggleNavbar();
         });
+
+        notificationsButton.setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new NotificationsFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
         return view;
     }
 }
