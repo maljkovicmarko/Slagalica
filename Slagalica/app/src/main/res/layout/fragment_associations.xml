@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AssociationsFragment">
+    tools:context="Fragments.AssociationsFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -55,8 +55,17 @@
                 <Button android:id="@+id/a2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A2" />
                 <Button android:id="@+id/a3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A3" />
                 <Button android:id="@+id/a4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="A4" />
-                <Button android:id="@+id/columnASolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="A" />
+                <EditText
+                    android:id="@+id/columnAInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Rešenje A" />
 
+                <Button
+                    android:id="@+id/columnASolutionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Rešenje kolone" />
             </LinearLayout>
 
             <LinearLayout
@@ -70,7 +79,17 @@
                 <Button android:id="@+id/b2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B2" />
                 <Button android:id="@+id/b3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B3" />
                 <Button android:id="@+id/b4Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="B4" />
-                <Button android:id="@+id/columnBSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="B" />
+                <EditText
+                    android:id="@+id/columnBInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Rešenje B" />
+
+                <Button
+                    android:id="@+id/columnBSolutionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Rešenje kolone" />
 
             </LinearLayout>
 
@@ -96,7 +115,18 @@
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp">
 
-                <Button android:id="@+id/columnCSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="C" />
+                <EditText
+                    android:id="@+id/columnCInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Rešenje C" />
+
+                <Button
+                    android:id="@+id/columnCSolutionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Rešenje kolone" />
+
                 <Button android:id="@+id/c1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C1" />
                 <Button android:id="@+id/c2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C2" />
                 <Button android:id="@+id/c3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C3" />
@@ -111,7 +141,17 @@
                 android:orientation="vertical"
                 android:layout_marginStart="4dp">
 
-                <Button android:id="@+id/columnDSolutionButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="D" />
+                <EditText
+                    android:id="@+id/columnDInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="Rešenje C" />
+
+                <Button
+                    android:id="@+id/columnDSolutionButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Rešenje kolone" />
                 <Button android:id="@+id/d1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D1" />
                 <Button android:id="@+id/d2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D2" />
                 <Button android:id="@+id/d3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D3" />
@@ -120,15 +160,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <EditText
-            android:id="@+id/finalSolutionInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/final_solution_hint"
-            android:inputType="text"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="12dp" />
 
         <Button
             android:id="@+id/guessFinalSolutionButton"

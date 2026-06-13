@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -25,6 +26,29 @@ public class GuessTheCombinationFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private int playerOneScore;
+
+    private TextView playerOneScoreText;
+    private TextView playerTwoScoreText;
+
+    public int getPlayerOneScore() {
+        return playerOneScore;
+    }
+
+    public void setPlayerOneScore(int playerOneScore) {
+        this.playerOneScore = playerOneScore;
+    }
+
+    public int getPlayerTwoScore() {
+        return playerTwoScore;
+    }
+
+    public void setPlayerTwoScore(int playerTwoScore) {
+        this.playerTwoScore = playerTwoScore;
+    }
+
+    private int playerTwoScore;
 
     private Button checkCombinationButton;
 
@@ -54,18 +78,24 @@ public class GuessTheCombinationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            playerOneScore = getArguments().getInt("playerOneScore", 0);
+            playerTwoScore = getArguments().getInt("playerTwoScore", 0);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_guess_the_combination, container, false);
 
         checkCombinationButton = view.findViewById(R.id.checkCombinationButton);
+
+        playerOneScoreText = view.findViewById(R.id.playerOneScoreText);
+        playerTwoScoreText = view.findViewById(R.id.playerTwoScoreText);
+
+        playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
+        playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
 
         checkCombinationButton.setOnClickListener(v -> {
             requireActivity()
