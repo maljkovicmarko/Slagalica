@@ -337,17 +337,10 @@ public class GuessTheCombinationFragment extends Fragment {
     private void finishGame() {
         stopTimer();
 
-        Bundle bundle = new Bundle();
-        bundle.putInt("playerOneScore", playerOneScore);
-        bundle.putInt("playerTwoScore", playerTwoScore);
-
-        StepByStepFragment fragment = new StepByStepFragment();
-        fragment.setArguments(bundle);
-
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
+                .replace(R.id.fragmentContainer, new HomeFragment())
                 .commit();
     }
 
