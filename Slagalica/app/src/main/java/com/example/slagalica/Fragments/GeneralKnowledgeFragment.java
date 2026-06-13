@@ -236,10 +236,17 @@ public class GeneralKnowledgeFragment extends Fragment {
     private void finishGame() {
         stopTimer();
 
+        Bundle bundle = new Bundle();
+        bundle.putInt("playerOneScore", score);
+        bundle.putInt("playerTwoScore", 0);
+
+        ConnectingGameFragment fragment = new ConnectingGameFragment();
+        fragment.setArguments(bundle);
+
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, new ConnectingGameFragment())
+                .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }
 
