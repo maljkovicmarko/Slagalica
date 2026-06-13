@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFF7FF"
     tools:context="Fragments.GuessTheCombinationFragment">
 
     <LinearLayout
@@ -52,41 +53,41 @@
                 android:layout_weight="1"
                 android:columnCount="5">
 
-                <TextView android:id="@+id/attempt1Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt1Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt1Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt1Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt1Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt1Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt1Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt1Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt1Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt1Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
-                <TextView android:id="@+id/attempt2Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt2Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt2Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt2Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt2Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt2Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt2Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt2Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt2Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt2Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
-                <TextView android:id="@+id/attempt3Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt3Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt3Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt3Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt3Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt3Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt3Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt3Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt3Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt3Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
-                <TextView android:id="@+id/attempt4Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt4Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt4Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt4Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt4Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt4Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt4Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt4Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt4Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt4Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
-                <TextView android:id="@+id/attempt5Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt5Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt5Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt5Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt5Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt5Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt5Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt5Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt5Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt5Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
-                <TextView android:id="@+id/attempt6Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt6Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt6Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt6Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/symbol_placeholder" android:gravity="center" android:background="@android:color/darker_gray" />
-                <TextView android:id="@+id/attempt6Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:text="@string/result_placeholder" android:gravity="center" />
+                <ImageView android:id="@+id/attempt6Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt6Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt6Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt6Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt6Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
             </GridLayout>
 
@@ -97,64 +98,12 @@
                 android:orientation="vertical"
                 android:layout_marginStart="12dp">
 
-                <ImageButton
-                    android:id="@+id/skockoSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/skocko"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_skocko" />
-
-                <ImageButton
-                    android:id="@+id/squareSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/square"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_square" />
-
-                <ImageButton
-                    android:id="@+id/circleSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/circle"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_circle" />
-
-                <ImageButton
-                    android:id="@+id/heartSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/heart"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_heart" />
-
-                <ImageButton
-                    android:id="@+id/triangleSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/triangle"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_triangle" />
-
-                <ImageButton
-                    android:id="@+id/starSymbolButton"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@drawable/star"
-                    android:background="@android:color/transparent"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/symbol_star" />
+                <ImageButton android:id="@+id/skockoSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginBottom="8dp" android:src="@drawable/skocko" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_skocko" />
+                <ImageButton android:id="@+id/squareSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginBottom="8dp" android:src="@drawable/square" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_square" />
+                <ImageButton android:id="@+id/circleSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginBottom="8dp" android:src="@drawable/circle" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_circle" />
+                <ImageButton android:id="@+id/heartSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginBottom="8dp" android:src="@drawable/heart" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_heart" />
+                <ImageButton android:id="@+id/triangleSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:layout_marginBottom="8dp" android:src="@drawable/triangle" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_triangle" />
+                <ImageButton android:id="@+id/starSymbolButton" android:layout_width="64dp" android:layout_height="64dp" android:src="@drawable/star" android:background="@android:color/transparent" android:scaleType="fitCenter" android:contentDescription="@string/symbol_star" />
 
             </LinearLayout>
 
