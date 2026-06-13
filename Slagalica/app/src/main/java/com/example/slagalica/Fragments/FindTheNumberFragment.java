@@ -26,6 +26,8 @@ public class FindTheNumberFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+    private int playerOneScore = 0;
+    private int playerTwoScore = 0;
     private Button submitExpressionButton;
 
     public FindTheNumberFragment() {
@@ -56,6 +58,9 @@ public class FindTheNumberFragment extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
+
+            playerOneScore = getArguments().getInt("playerOneScore", 0);
+            playerTwoScore = getArguments().getInt("playerTwoScore", 0);
         }
     }
 
