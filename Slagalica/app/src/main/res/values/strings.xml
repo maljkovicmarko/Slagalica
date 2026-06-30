@@ -104,6 +104,8 @@
 
     <string name="play_game">Igraj igru</string>
 
+    <string name="play_friendly_game">Igraj sa prijateljem</string>
+
     <string name="notifications">Obaveštenja</string>
 
     <string name="korak_po_korak_title">Korak po korak</string>

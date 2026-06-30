@@ -66,7 +66,7 @@ public class PlayerService {
                             region
                     );
 
-                    player.setTokens(120);
+                    player.setTokens(5);
                     player.setTotalStars(340);
                     player.setLeagueName("Bronze League");
                     player.setStatistics(createDummyStatistics());

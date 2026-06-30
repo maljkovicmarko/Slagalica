@@ -1,11 +1,11 @@
 package com.example.slagalica.Fragments;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -13,9 +13,11 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.slagalica.Activities.MainActivity;
-import com.example.slagalica.Model.SystemNotification;
 import com.example.slagalica.R;
-import com.example.slagalica.Services.NotificationService;
+import com.example.slagalica.Services.FriendInviteService;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,16 +25,12 @@ import java.util.List;
 public class NotificationsFragment extends Fragment {
 
     private ImageButton menuButton;
-
-    private Button allNotificationsButton;
-    private Button unreadNotificationsButton;
-    private Button readNotificationsButton;
-    private Button dummyNotificationsButton;
-
     private ListView notificationsListView;
 
-    private NotificationService notificationService;
-    private List<SystemNotification> currentNotifications;
+    private FriendInviteService friendInviteService;
+    private ListenerRegistration inviteListener;
+
+    private final List<FriendInviteItem> pendingInvites = new ArrayList<>();
 
     public NotificationsFragment() {
     }
@@ -40,8 +38,7 @@ public class NotificationsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        notificationService = new NotificationService();
-        currentNotifications = new ArrayList<>();
+        friendInviteService = new FriendInviteService();
     }
 
     @Override
@@ -51,12 +48,6 @@ public class NotificationsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_notifications, container, false);
 
         menuButton = view.findViewById(R.id.menuButton);
-
-        allNotificationsButton = view.findViewById(R.id.allNotificationsButton);
-        unreadNotificationsButton = view.findViewById(R.id.unreadNotificationsButton);
-        readNotificationsButton = view.findViewById(R.id.readNotificationsButton);
-        dummyNotificationsButton = view.findViewById(R.id.dummyNotificationsButton);
-
         notificationsListView = view.findViewById(R.id.notificationsListView);
 
         menuButton.setVisibility(View.VISIBLE);
@@ -65,59 +56,154 @@ public class NotificationsFragment extends Fragment {
             ((MainActivity) requireActivity()).toggleNavbar();
         });
 
-        allNotificationsButton.setOnClickListener(v -> loadNotifications("ALL"));
-        unreadNotificationsButton.setOnClickListener(v -> loadNotifications("UNREAD"));
-        readNotificationsButton.setOnClickListener(v -> loadNotifications("READ"));
-
-        dummyNotificationsButton.setOnClickListener(v -> {
-            notificationService.createDummyNotifications(
-                    () -> {
-                        Toast.makeText(requireContext(), "Dummy notifications created", Toast.LENGTH_SHORT).show();
-                        loadNotifications("ALL");
-                    },
-                    error -> Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-            );
-        });
-
         notificationsListView.setOnItemClickListener((parent, itemView, position, id) -> {
-            SystemNotification notification = currentNotifications.get(position);
-
-            notificationService.markAsRead(
-                    notification.getId(),
-                    () -> {
-                        Toast.makeText(requireContext(), "Marked as read", Toast.LENGTH_SHORT).show();
-                        loadNotifications("ALL");
-                    },
-                    error -> Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-            );
+            FriendInviteItem invite = pendingInvites.get(position);
+            showInviteDialog(invite);
         });
 
-        loadNotifications("ALL");
+        listenForFriendInvites();
 
         return view;
     }
 
-    private void loadNotifications(String filter) {
-        notificationService.getNotifications(
-                filter,
-                notifications -> {
-                    currentNotifications = notifications;
+    private void listenForFriendInvites() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-                    List<String> displayItems = new ArrayList<>();
+        if (currentUser == null) {
+            Toast.makeText(requireContext(), "User is not logged in.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                    for (SystemNotification notification : notifications) {
-                        displayItems.add(notification.getDisplayText());
+        String currentUID = currentUser.getUid();
+
+        inviteListener = friendInviteService.listenForIncomingInvites(
+                currentUID,
+                new FriendInviteService.OnIncomingInvite() {
+                    @Override
+                    public void onInviteReceived(String inviteId, String fromUID) {
+                        addInviteToList(inviteId, fromUID, currentUID);
                     }
 
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                            requireContext(),
-                            android.R.layout.simple_list_item_1,
-                            displayItems
-                    );
-
-                    notificationsListView.setAdapter(adapter);
-                },
-                error -> Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
         );
+    }
+
+    private void addInviteToList(String inviteId, String fromUID, String currentUID) {
+        for (FriendInviteItem item : pendingInvites) {
+            if (item.inviteId.equals(inviteId)) {
+                return;
+            }
+        }
+
+        pendingInvites.add(new FriendInviteItem(inviteId, fromUID, currentUID));
+        refreshList();
+    }
+
+    private void refreshList() {
+        List<String> displayItems = new ArrayList<>();
+
+        if (pendingInvites.isEmpty()) {
+            displayItems.add("No pending friend game invites.");
+        } else {
+            for (FriendInviteItem invite : pendingInvites) {
+                displayItems.add("Friendly game invite from: " + invite.fromUID);
+            }
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                displayItems
+        );
+
+        notificationsListView.setAdapter(adapter);
+    }
+
+    private void showInviteDialog(FriendInviteItem invite) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Friendly game invite")
+                .setMessage("Accept invite from " + invite.fromUID + "?")
+                .setPositiveButton("Accept", (dialog, which) -> acceptInvite(invite))
+                .setNegativeButton("Decline", (dialog, which) -> declineInvite(invite))
+                .show();
+    }
+
+    private void acceptInvite(FriendInviteItem invite) {
+        friendInviteService.acceptInvite(
+                invite.inviteId,
+                invite.fromUID,
+                invite.toUID,
+                new FriendInviteService.OnInviteAccepted() {
+                    @Override
+                    public void onSuccess(String sessionId) {
+                        Toast.makeText(requireContext(), "Invite accepted!", Toast.LENGTH_SHORT).show();
+                        openFirstGame(sessionId);
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private void declineInvite(FriendInviteItem invite) {
+        friendInviteService.declineInvite(
+                invite.inviteId,
+                new FriendInviteService.OnInviteDeclined() {
+                    @Override
+                    public void onSuccess() {
+                        pendingInvites.remove(invite);
+                        refreshList();
+                        Toast.makeText(requireContext(), "Invite declined.", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+    }
+
+    private void openFirstGame(String sessionId) {
+        Bundle bundle = new Bundle();
+        bundle.putString("sessionId", sessionId);
+
+        GeneralKnowledgeFragment fragment = new GeneralKnowledgeFragment();
+        fragment.setArguments(bundle);
+
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .commit();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        if (inviteListener != null) {
+            inviteListener.remove();
+            inviteListener = null;
+        }
+    }
+
+    private static class FriendInviteItem {
+        String inviteId;
+        String fromUID;
+        String toUID;
+
+        FriendInviteItem(String inviteId, String fromUID, String toUID) {
+            this.inviteId = inviteId;
+            this.fromUID = fromUID;
+            this.toUID = toUID;
+        }
     }
 }

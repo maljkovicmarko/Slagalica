@@ -1,5 +1,7 @@
 package com.example.slagalica.Model;
 
+import java.util.Date;
+
 public class Player {
     private String id;
     private String email;
@@ -11,6 +13,8 @@ public class Player {
     private int totalStars;
     private String leagueName;
     private PlayerStatistics statistics;
+
+    private Date lastDailyTokenReward;
 
     public Player() {
     }
@@ -93,5 +97,13 @@ public class Player {
 
     public void setAvatarBase64(String avatarBase64) {
         this.avatarBase64 = avatarBase64;
+    }
+
+    public Date getLastDailyTokenReward() {
+        return lastDailyTokenReward;
+    }
+
+    public void setLastDailyTokenReward(Date lastDailyTokenReward) {
+        this.lastDailyTokenReward = lastDailyTokenReward;
     }
 }
