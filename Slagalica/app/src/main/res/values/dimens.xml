@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="navbar_icon_size">24dp</dimen>
+    <dimen name="dialog_horizontal_padding">32dp</dimen>
+    <dimen name="dialog_vertical_padding">24dp</dimen>
 </resources>

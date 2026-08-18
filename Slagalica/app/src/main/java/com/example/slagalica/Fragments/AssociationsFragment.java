@@ -14,18 +14,35 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
-import com.example.slagalica.Model.Association;
-import com.example.slagalica.Model.AssociationColumn;
 import com.example.slagalica.R;
+import com.example.slagalica.Services.ActiveSessionTracker;
+import com.example.slagalica.Services.GamePhaseSnapshot;
+import com.example.slagalica.Services.SessionSnapshot;
+import com.example.slagalica.Services.TurnSnapshot;
+import com.example.slagalica.Services.WebSocketGameClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Arrays;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 public class AssociationsFragment extends Fragment {
+    private static final String ARG_SESSION_JSON = "sessionJson";
+    private static final String GAME_TYPE_ASSOCIATIONS = "associations";
+    private static final String TURN_MODE_OPEN_FIELD = "open_field";
+    private static final String TURN_MODE_GUESS_OR_PASS = "guess_or_pass";
+    private static final String ACTION_OPEN_FIELD = "associations_open_field";
+    private static final String ACTION_GUESS_COLUMN = "associations_guess_column";
+    private static final String ACTION_GUESS_FINAL = "associations_guess_final";
+    private static final String ACTION_PASS = "associations_pass";
 
     private TextView timerText;
+    private TextView playerTurnText;
     private TextView playerOneScoreText;
     private TextView playerTwoScoreText;
 
@@ -36,7 +53,8 @@ public class AssociationsFragment extends Fragment {
     private EditText finalSolutionInput;
 
     private Button guessFinalSolutionButton;
-
+    private Button submitColumnSolutionButton;
+    private Button passTurnButton;
     private Button a1Button, a2Button, a3Button, a4Button, columnASolutionButton;
     private Button b1Button, b2Button, b3Button, b4Button, columnBSolutionButton;
     private Button c1Button, c2Button, c3Button, c4Button, columnCSolutionButton;
@@ -46,81 +64,74 @@ public class AssociationsFragment extends Fragment {
     private final int REVEALED_COLOR = Color.rgb(180, 180, 180);
     private final int CORRECT_COLOR = Color.rgb(76, 175, 80);
 
-    private int playerOneScore;
-    private int playerTwoScore;
+    private final Map<String, Button[]> fieldButtonsByColumnId = new HashMap<>();
+    private final Map<String, Button> solutionButtonsByColumnId = new HashMap<>();
+    private final Map<String, EditText> inputsByColumnId = new HashMap<>();
 
     private CountDownTimer timer;
-    private Association association;
+    private WebSocketGameClient webSocketGameClient;
+    private WebSocketGameClient.ListenerHandle sessionListenerHandle;
 
-    private final Map<Button, String> hiddenValues = new HashMap<>();
-    private final Map<String, Integer> openedFieldsByColumn = new HashMap<>();
+    private String sessionJson;
+    private String sessionId;
+    private String currentUid;
+    private String focusedColumnId;
+    private String turnMode;
+    private long currentPhaseVersion;
+    private long renderedPhaseVersion;
+    private int playerOneScore;
+    private int playerTwoScore;
+    private boolean canAct;
+    private boolean requestInProgress;
+    private boolean finishedNavigated;
 
     public AssociationsFragment() {
+    }
+
+    public static AssociationsFragment newInstance(String sessionJson) {
+        AssociationsFragment fragment = new AssociationsFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_SESSION_JSON, sessionJson);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        playerOneScore = 0;
-        playerTwoScore = 0;
-
+        webSocketGameClient = WebSocketGameClient.getInstance();
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        currentUid = firebaseUser == null ? null : firebaseUser.getUid();
         if (getArguments() != null) {
+            sessionJson = getArguments().getString(ARG_SESSION_JSON);
             playerOneScore = getArguments().getInt("playerOneScore", 0);
             playerTwoScore = getArguments().getInt("playerTwoScore", 0);
         }
-
-        association = createDummyAssociation();
-
-        openedFieldsByColumn.put("A", 0);
-        openedFieldsByColumn.put("B", 0);
-        openedFieldsByColumn.put("C", 0);
-        openedFieldsByColumn.put("D", 0);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_associations, container, false);
-
         bindViews(view);
-        setupAssociationData();
-        setupHiddenButtons();
-        setupSolutionButtons();
-
+        setupMaps();
+        setupClickListeners();
         updateScoreText();
-        startTimer();
 
-        guessFinalSolutionButton.setOnClickListener(v -> guessFinalSolution());
+        if (sessionJson == null || sessionJson.isBlank()) {
+            showLoadingState();
+        } else try {
+            renderSession(new SessionSnapshot(new JSONObject(sessionJson)));
+            subscribeSessionUpdates();
+        } catch (Exception ignored) {
+            showLoadingState();
+        }
 
         return view;
     }
 
-    private Association createDummyAssociation() {
-        return new Association(
-                new AssociationColumn(
-                        Arrays.asList("Tesla", "Edison", "Struja", "Napon"),
-                        "Elektrotehnika"
-                ),
-                new AssociationColumn(
-                        Arrays.asList("Ajnštajn", "Njutn", "Kvant", "Sila"),
-                        "Fizika"
-                ),
-                new AssociationColumn(
-                        Arrays.asList("Darvin", "Vrsta", "Evolucija", "Genetika"),
-                        "Biologija"
-                ),
-                new AssociationColumn(
-                        Arrays.asList("Mendeljejev", "Element", "Periodni sistem", "Atom"),
-                        "Hemija"
-                ),
-                "Nauka"
-        );
-    }
-
     private void bindViews(View view) {
         timerText = view.findViewById(R.id.timerText);
+        playerTurnText = view.findViewById(R.id.playerTurnText);
         playerOneScoreText = view.findViewById(R.id.playerOneScoreText);
         playerTwoScoreText = view.findViewById(R.id.playerTwoScoreText);
 
@@ -128,28 +139,26 @@ public class AssociationsFragment extends Fragment {
         columnBInput = view.findViewById(R.id.columnBInput);
         columnCInput = view.findViewById(R.id.columnCInput);
         columnDInput = view.findViewById(R.id.columnDInput);
-
         finalSolutionInput = view.findViewById(R.id.finalSolutionInput);
         guessFinalSolutionButton = view.findViewById(R.id.guessFinalSolutionButton);
+        submitColumnSolutionButton = view.findViewById(R.id.submitColumnSolutionButton);
+        passTurnButton = view.findViewById(R.id.passTurnButton);
 
         a1Button = view.findViewById(R.id.a1Button);
         a2Button = view.findViewById(R.id.a2Button);
         a3Button = view.findViewById(R.id.a3Button);
         a4Button = view.findViewById(R.id.a4Button);
         columnASolutionButton = view.findViewById(R.id.columnASolutionButton);
-
         b1Button = view.findViewById(R.id.b1Button);
         b2Button = view.findViewById(R.id.b2Button);
         b3Button = view.findViewById(R.id.b3Button);
         b4Button = view.findViewById(R.id.b4Button);
         columnBSolutionButton = view.findViewById(R.id.columnBSolutionButton);
-
         c1Button = view.findViewById(R.id.c1Button);
         c2Button = view.findViewById(R.id.c2Button);
         c3Button = view.findViewById(R.id.c3Button);
         c4Button = view.findViewById(R.id.c4Button);
         columnCSolutionButton = view.findViewById(R.id.columnCSolutionButton);
-
         d1Button = view.findViewById(R.id.d1Button);
         d2Button = view.findViewById(R.id.d2Button);
         d3Button = view.findViewById(R.id.d3Button);
@@ -157,222 +166,435 @@ public class AssociationsFragment extends Fragment {
         columnDSolutionButton = view.findViewById(R.id.columnDSolutionButton);
     }
 
-    private void setupAssociationData() {
-        setupColumn("A", association.getColumnA(),
-                a1Button, a2Button, a3Button, a4Button, columnASolutionButton);
+    private void setupMaps() {
+        fieldButtonsByColumnId.put("A", new Button[]{a1Button, a2Button, a3Button, a4Button});
+        fieldButtonsByColumnId.put("B", new Button[]{b1Button, b2Button, b3Button, b4Button});
+        fieldButtonsByColumnId.put("C", new Button[]{c1Button, c2Button, c3Button, c4Button});
+        fieldButtonsByColumnId.put("D", new Button[]{d1Button, d2Button, d3Button, d4Button});
 
-        setupColumn("B", association.getColumnB(),
-                b1Button, b2Button, b3Button, b4Button, columnBSolutionButton);
+        solutionButtonsByColumnId.put("A", columnASolutionButton);
+        solutionButtonsByColumnId.put("B", columnBSolutionButton);
+        solutionButtonsByColumnId.put("C", columnCSolutionButton);
+        solutionButtonsByColumnId.put("D", columnDSolutionButton);
 
-        setupColumn("C", association.getColumnC(),
-                c1Button, c2Button, c3Button, c4Button, columnCSolutionButton);
-
-        setupColumn("D", association.getColumnD(),
-                d1Button, d2Button, d3Button, d4Button, columnDSolutionButton);
+        inputsByColumnId.put("A", columnAInput);
+        inputsByColumnId.put("B", columnBInput);
+        inputsByColumnId.put("C", columnCInput);
+        inputsByColumnId.put("D", columnDInput);
     }
 
-    private void setupColumn(String column,
-                             AssociationColumn associationColumn,
-                             Button firstButton,
-                             Button secondButton,
-                             Button thirdButton,
-                             Button fourthButton,
-                             Button solutionButton) {
+    private void setupClickListeners() {
+        setupColumnFieldClicks("A");
+        setupColumnFieldClicks("B");
+        setupColumnFieldClicks("C");
+        setupColumnFieldClicks("D");
 
-        hiddenValues.put(firstButton, associationColumn.getClues().get(0));
-        hiddenValues.put(secondButton, associationColumn.getClues().get(1));
-        hiddenValues.put(thirdButton, associationColumn.getClues().get(2));
-        hiddenValues.put(fourthButton, associationColumn.getClues().get(3));
-
-        hideSolutionButton(solutionButton, column);
+        setupColumnInputFocus("A");
+        setupColumnInputFocus("B");
+        setupColumnInputFocus("C");
+        setupColumnInputFocus("D");
+        submitColumnSolutionButton.setOnClickListener(v -> {
+            if (focusedColumnId != null) {
+                guessColumn(focusedColumnId);
+            }
+        });
+        guessFinalSolutionButton.setOnClickListener(v -> guessFinal());
+        passTurnButton.setOnClickListener(v -> sendPass());
     }
 
-    private void setupHiddenButtons() {
-        for (Button button : hiddenValues.keySet()) {
-            setButtonColor(button, DEFAULT_COLOR);
+    private void setupColumnInputFocus(String columnId) {
+        EditText input = inputsByColumnId.get(columnId);
+        if (input == null) {
+            return;
+        }
 
-            button.setOnClickListener(v -> {
-                Button clickedButton = (Button) v;
+        input.setOnFocusChangeListener((view, hasFocus) -> {
+            if (hasFocus) {
+                focusedColumnId = columnId;
+            }
+            updateSubmitColumnSolutionButton();
+        });
+    }
 
-                if (!clickedButton.isEnabled()) {
-                    return;
+    private void setupColumnFieldClicks(String columnId) {
+        Button[] buttons = fieldButtonsByColumnId.get(columnId);
+        if (buttons == null) {
+            return;
+        }
+        for (int i = 0; i < buttons.length; i++) {
+            final int fieldIndex = i;
+            buttons[i].setOnClickListener(v -> openField(columnId, fieldIndex));
+        }
+    }
+
+    private void subscribeSessionUpdates() {
+        if (sessionId == null || sessionId.isBlank() || sessionListenerHandle != null) {
+            return;
+        }
+
+        sessionListenerHandle = webSocketGameClient.subscribeSession(sessionId, new WebSocketGameClient.OnSessionListener() {
+            @Override
+            public void onSessionState(SessionSnapshot snapshot) {
+                renderSession(snapshot);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
                 }
-
-                revealField(clickedButton);
-            });
-        }
+            }
+        });
     }
 
-    private void setupSolutionButtons() {
-        columnASolutionButton.setOnClickListener(v ->
-                guessColumnSolution("A", columnAInput, columnASolutionButton, association.getColumnA()));
-
-        columnBSolutionButton.setOnClickListener(v ->
-                guessColumnSolution("B", columnBInput, columnBSolutionButton, association.getColumnB()));
-
-        columnCSolutionButton.setOnClickListener(v ->
-                guessColumnSolution("C", columnCInput, columnCSolutionButton, association.getColumnC()));
-
-        columnDSolutionButton.setOnClickListener(v ->
-                guessColumnSolution("D", columnDInput, columnDSolutionButton, association.getColumnD()));
-    }
-
-    private void revealField(Button button) {
-        String value = hiddenValues.get(button);
-        String column = getColumnForButton(button);
-
-        button.setText(value);
-        button.setEnabled(false);
-        setButtonColor(button, REVEALED_COLOR);
-
-        openedFieldsByColumn.put(column, openedFieldsByColumn.get(column) + 1);
-    }
-
-    private void guessColumnSolution(String column,
-                                     EditText input,
-                                     Button solutionButton,
-                                     AssociationColumn associationColumn) {
-
-        String guess = input.getText().toString().trim();
-
-        if (guess.isEmpty()) {
-            input.setError("Unesi rešenje");
+    private void renderSession(SessionSnapshot snapshot) {
+        if (!isAdded() || timerText == null || snapshot == null) {
             return;
         }
 
-        if (!guess.equalsIgnoreCase(associationColumn.getSolution())) {
-            input.setError("Netačno");
-            input.setText("");
+        sessionId = snapshot.getString("sessionId");
+        if (isTerminalSession(snapshot)) {
+            finishMatch();
+            return;
+        }
+        ActiveSessionTracker.markActiveSession(sessionId);
+
+        String currentGame = snapshot.getString("currentGame");
+        if (currentGame != null && !GAME_TYPE_ASSOCIATIONS.equals(currentGame)) {
+            openGuessCombination(snapshot.toJson().toString());
             return;
         }
 
-        solutionButton.setText(associationColumn.getSolution());
-        solutionButton.setEnabled(false);
-        input.setEnabled(false);
-        setButtonColor(solutionButton, CORRECT_COLOR);
-        revealColumnFields(column);
+        JSONObject activeGameState = snapshot.getObject("activeGameState");
+        if (activeGameState == null || activeGameState.optBoolean("finished", false)) {
+            finishGame();
+            return;
+        }
 
-        int opened = openedFieldsByColumn.get(column);
-        int unopened = 4 - opened;
+        JSONObject currentRound = activeGameState.optJSONObject("currentRound");
+        if (currentRound == null) {
+            showLoadingState();
+            return;
+        }
 
-        int points = 2 + unopened;
-        playerOneScore += points;
+        playerOneScore = activeGameState.optInt("player1Score", playerOneScore);
+        playerTwoScore = activeGameState.optInt("player2Score", playerTwoScore);
+        turnMode = activeGameState.optString("turnMode", TURN_MODE_OPEN_FIELD);
+        requestInProgress = false;
 
         updateScoreText();
-
-        Toast.makeText(
-                requireContext(),
-                "Tačno rešenje kolone! +" + points,
-                Toast.LENGTH_SHORT
-        ).show();
+        renderTurnText(snapshot.getTurnState(), activeGameState);
+        renderRound(currentRound);
+        renderPhase(snapshot.getGamePhase(), snapshot.getLong("serverNowMs"));
     }
 
-    private void guessFinalSolution() {
-        String guess = finalSolutionInput.getText().toString().trim();
+    private void renderTurnText(TurnSnapshot turnState, JSONObject activeGameState) {
+        canAct = turnState != null && turnState.canAct(currentUid);
+        String roundText = String.format(
+                Locale.getDefault(),
+                "Runda %d/%d · ",
+                activeGameState.optInt("roundNumber", 1),
+                activeGameState.optInt("totalRounds", 2)
+        );
 
-        if (guess.isEmpty()) {
-            finalSolutionInput.setError("Unesi konačno rešenje");
+        if (turnState == null || turnState.getActivePlayerUid() == null) {
+            playerTurnText.setText(roundText + "Čekamo sledeću rundu");
+        } else if (turnState.getActivePlayerUid().equals(currentUid)) {
+            playerTurnText.setText(roundText + "Tvoj potez");
+        } else {
+            playerTurnText.setText(roundText + "Protivnik je na potezu");
+        }
+    }
+
+    private void renderRound(JSONObject currentRound) {
+        JSONArray columns = currentRound.optJSONArray("columns");
+        if (columns == null) {
             return;
         }
 
-        if (guess.equalsIgnoreCase(association.getFinalSolution())) {
-            int points = calculateFinalSolutionPoints();
-            playerOneScore += points;
-            updateScoreText();
+        for (int i = 0; i < columns.length(); i++) {
+            JSONObject column = columns.optJSONObject(i);
+            if (column == null) {
+                continue;
+            }
+            renderColumn(column);
+        }
 
-            Toast.makeText(
-                    requireContext(),
-                    "Tačno konačno rešenje! +" + points,
-                    Toast.LENGTH_SHORT
-            ).show();
+        boolean canGuess = canAct && !requestInProgress;
+        boolean canOpen = canGuess && TURN_MODE_OPEN_FIELD.equals(turnMode);
+        boolean canGuessOrPass = canGuess && TURN_MODE_GUESS_OR_PASS.equals(turnMode);
 
-            finishGame();
-        } else {
-            Toast.makeText(
-                    requireContext(),
-                    "Netačno konačno rešenje",
-                    Toast.LENGTH_SHORT
-            ).show();
+        setFieldsEnabled(canOpen);
+        setInputsEnabled(canGuessOrPass);
+        updateSubmitColumnSolutionButton();
+        guessFinalSolutionButton.setEnabled(canGuessOrPass);
+        guessFinalSolutionButton.setText(canGuessOrPass ? "Pogodi konačno rešenje" : "Čekaj potez");
+        passTurnButton.setEnabled(canGuessOrPass);
+    }
 
-            finalSolutionInput.setText("");
+    private void renderColumn(JSONObject column) {
+        String columnId = column.optString("id", null);
+        if (columnId == null) {
+            return;
+        }
+
+        boolean solved = column.optBoolean("solved", false);
+        Button solutionButton = solutionButtonsByColumnId.get(columnId);
+        EditText input = inputsByColumnId.get(columnId);
+        if (solutionButton != null) {
+            if (solved) {
+                solutionButton.setText(column.optString("solution", "Rešenje " + columnId));
+                setButtonColor(solutionButton, CORRECT_COLOR);
+                solutionButton.setEnabled(false);
+            } else {
+                solutionButton.setText("Rešenje " + columnId);
+                setButtonColor(solutionButton, DEFAULT_COLOR);
+                solutionButton.setEnabled(canAct && TURN_MODE_GUESS_OR_PASS.equals(turnMode) && !requestInProgress);
+            }
+            solutionButton.setVisibility(View.GONE);
+        }
+        if (input != null) {
+            input.setEnabled(!solved && canAct && TURN_MODE_GUESS_OR_PASS.equals(turnMode) && !requestInProgress);
+            if (solved) {
+                input.setText("");
+                input.setHint(column.optString("solution", "Rešenje " + columnId));
+            }
+        }
+
+        JSONArray fields = column.optJSONArray("fields");
+        Button[] fieldButtons = fieldButtonsByColumnId.get(columnId);
+        if (fields == null || fieldButtons == null) {
+            return;
+        }
+
+        for (int i = 0; i < fieldButtons.length; i++) {
+            Button button = fieldButtons[i];
+            JSONObject field = i < fields.length() ? fields.optJSONObject(i) : null;
+            if (field == null) {
+                button.setText(columnId + (i + 1));
+                button.setEnabled(false);
+                continue;
+            }
+
+            boolean opened = field.optBoolean("opened", false);
+            button.setText(opened ? field.optString("value", "-") : field.optString("label", columnId + (i + 1)));
+            setButtonColor(button, opened ? REVEALED_COLOR : DEFAULT_COLOR);
+            button.setEnabled(!opened && canAct && TURN_MODE_OPEN_FIELD.equals(turnMode) && !requestInProgress);
         }
     }
 
-    private int calculateFinalSolutionPoints() {
-        int points = 7;
-
-        points += calculateColumnFinalBonus("A", columnASolutionButton);
-        points += calculateColumnFinalBonus("B", columnBSolutionButton);
-        points += calculateColumnFinalBonus("C", columnCSolutionButton);
-        points += calculateColumnFinalBonus("D", columnDSolutionButton);
-
-        return points;
+    private void setFieldsEnabled(boolean enabled) {
+        for (Button[] buttons : fieldButtonsByColumnId.values()) {
+            for (Button button : buttons) {
+                button.setEnabled(enabled && button.getText() != null && button.getText().toString().matches("[A-D][1-4]"));
+            }
+        }
     }
 
-    private int calculateColumnFinalBonus(String column, Button solutionButton) {
-        if (!solutionButton.isEnabled()) {
-            return 0;
+    private void setInputsEnabled(boolean enabled) {
+        for (Map.Entry<String, EditText> entry : inputsByColumnId.entrySet()) {
+            Button solutionButton = solutionButtonsByColumnId.get(entry.getKey());
+            boolean solved = solutionButton != null && !solutionButton.isEnabled() && !solutionButton.getText().toString().startsWith("Rešenje");
+            entry.getValue().setEnabled(enabled && !solved);
+            if (solutionButton != null && !solved) {
+                solutionButton.setEnabled(enabled);
+            }
         }
-
-        int opened = openedFieldsByColumn.get(column);
-
-        if (opened == 0) {
-            return 6;
-        }
-
-        return 2 + (4 - opened);
+        finalSolutionInput.setEnabled(enabled);
     }
 
-    private String getColumnForButton(Button button) {
-        if (button == a1Button || button == a2Button || button == a3Button || button == a4Button) {
-            return "A";
+    private void updateSubmitColumnSolutionButton() {
+        boolean visible = focusedColumnId != null
+                && canAct
+                && !requestInProgress
+                && TURN_MODE_GUESS_OR_PASS.equals(turnMode);
+        submitColumnSolutionButton.setVisibility(visible ? View.VISIBLE : View.GONE);
+        submitColumnSolutionButton.setEnabled(visible);
+        if (visible) {
+            submitColumnSolutionButton.setText("Potvrdi rešenje kolone " + focusedColumnId);
         }
-
-        if (button == b1Button || button == b2Button || button == b3Button || button == b4Button) {
-            return "B";
-        }
-
-        if (button == c1Button || button == c2Button || button == c3Button || button == c4Button) {
-            return "C";
-        }
-
-        return "D";
     }
 
-    private void hideSolutionButton(Button button, String label) {
-        button.setText("Rešenje " + label);
-        button.setEnabled(true);
-        setButtonColor(button, DEFAULT_COLOR);
-    }
+    private void renderPhase(GamePhaseSnapshot gamePhase, Long serverNowMs) {
+        if (gamePhase == null) {
+            stopTimer();
+            timerText.setText("-");
+            currentPhaseVersion = 0L;
+            renderedPhaseVersion = 0L;
+            return;
+        }
 
-    private void startTimer() {
+        currentPhaseVersion = gamePhase.getPhaseVersion();
+        if (renderedPhaseVersion == currentPhaseVersion) {
+            return;
+        }
+
+        renderedPhaseVersion = currentPhaseVersion;
         stopTimer();
 
-        timer = new CountDownTimer(120000, 1000) {
+        long referenceNowMs = serverNowMs == null ? System.currentTimeMillis() : serverNowMs;
+        long remainingMs = gamePhase.getRemainingMs(referenceNowMs);
+        timer = new CountDownTimer(Math.max(remainingMs, 1L), 250L) {
             @Override
             public void onTick(long millisUntilFinished) {
-                long seconds = millisUntilFinished / 1000 + 1;
-                timerText.setText(String.format(Locale.getDefault(), "%ds", seconds));
+                long seconds = (long) Math.ceil(millisUntilFinished / 1000.0);
+                timerText.setText(seconds + "s");
             }
 
             @Override
             public void onFinish() {
                 timerText.setText("0s");
-                finishGame();
+                disableAllInputs();
             }
         };
-
         timer.start();
     }
 
-    private void stopTimer() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+    private void openField(String columnId, int fieldIndex) {
+        if (!canAct || requestInProgress || !TURN_MODE_OPEN_FIELD.equals(turnMode)) {
+            return;
+        }
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put("columnId", columnId);
+            data.put("fieldIndex", fieldIndex);
+            sendAction(ACTION_OPEN_FIELD, data);
+        } catch (JSONException e) {
+            showToast("Otvaranje polja nije uspelo");
         }
     }
 
+    private void guessColumn(String columnId) {
+        if (!canAct || requestInProgress || !TURN_MODE_GUESS_OR_PASS.equals(turnMode)) {
+            return;
+        }
+
+        EditText input = inputsByColumnId.get(columnId);
+        String guess = input == null ? "" : input.getText().toString().trim();
+        if (guess.isEmpty()) {
+            if (input != null) {
+                input.setError("Unesi rešenje");
+            }
+            return;
+        }
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put("columnId", columnId);
+            data.put("guess", guess);
+            sendAction(ACTION_GUESS_COLUMN, data);
+            if (input != null) {
+                input.setText("");
+            }
+        } catch (JSONException e) {
+            showToast("Slanje rešenja kolone nije uspelo");
+        }
+    }
+
+    private void guessFinal() {
+        if (!canAct || requestInProgress || !TURN_MODE_GUESS_OR_PASS.equals(turnMode)) {
+            return;
+        }
+
+        String guess = finalSolutionInput.getText().toString().trim();
+        if (guess.isEmpty()) {
+            finalSolutionInput.setError("Unesi konačno rešenje");
+            return;
+        }
+
+        try {
+            JSONObject data = new JSONObject();
+            data.put("guess", guess);
+            sendAction(ACTION_GUESS_FINAL, data);
+            finalSolutionInput.setText("");
+        } catch (JSONException e) {
+            showToast("Slanje konačnog rešenja nije uspelo");
+        }
+    }
+
+    private void sendPass() {
+        sendAction(ACTION_PASS, new JSONObject());
+    }
+
+    private void sendAction(String actionType, JSONObject data) {
+        if (sessionId == null || currentPhaseVersion <= 0L) {
+            return;
+        }
+
+        requestInProgress = true;
+        disableAllInputs();
+        webSocketGameClient.sendGameAction(
+                sessionId,
+                actionType,
+                currentPhaseVersion,
+                data,
+                new WebSocketGameClient.OnRequestResult() {
+                    @Override
+                    public void onSuccess(JSONObject data) {
+                        refreshSessionAfterAction();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                        requestInProgress = false;
+                        showToast(errorMessage);
+                        refreshSessionAfterAction();
+                    }
+                }
+        );
+    }
+
+    private void refreshSessionAfterAction() {
+        webSocketGameClient.getSession(sessionId, new WebSocketGameClient.OnRequestResult() {
+            @Override
+            public void onSuccess(JSONObject data) {
+                JSONObject sessionState = data == null ? null : data.optJSONObject("session");
+                if (sessionState == null) {
+                    sessionState = data;
+                }
+                renderSession(new SessionSnapshot(sessionState));
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                requestInProgress = false;
+                showToast(errorMessage);
+            }
+        });
+    }
+
+    private void showLoadingState() {
+        timerText.setText("-");
+        playerTurnText.setText("Asocijacije nisu učitane");
+        updateScoreText();
+        disableAllInputs();
+    }
+
+    private void disableAllInputs() {
+        for (Button[] buttons : fieldButtonsByColumnId.values()) {
+            for (Button button : buttons) {
+                button.setEnabled(false);
+            }
+        }
+        for (Button button : solutionButtonsByColumnId.values()) {
+            button.setEnabled(false);
+        }
+        for (EditText input : inputsByColumnId.values()) {
+            input.setEnabled(false);
+        }
+        finalSolutionInput.setEnabled(false);
+        submitColumnSolutionButton.setEnabled(false);
+        submitColumnSolutionButton.setVisibility(View.GONE);
+        guessFinalSolutionButton.setEnabled(false);
+        passTurnButton.setEnabled(false);
+    }
+
     private void finishGame() {
+        if (finishedNavigated) {
+            return;
+        }
+        finishedNavigated = true;
         stopTimer();
 
         Bundle bundle = new Bundle();
@@ -389,6 +611,40 @@ public class AssociationsFragment extends Fragment {
                 .commit();
     }
 
+    private void openGuessCombination(String nextSessionJson) {
+        if (finishedNavigated) {
+            return;
+        }
+        finishedNavigated = true;
+        stopTimer();
+
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, GuessTheCombinationFragment.newInstance(nextSessionJson))
+                .commit();
+    }
+
+    private boolean isTerminalSession(SessionSnapshot snapshot) {
+        String status = snapshot.getString("status");
+        return "finished".equals(status);
+    }
+
+    private void finishMatch() {
+        if (finishedNavigated) {
+            return;
+        }
+        finishedNavigated = true;
+        stopTimer();
+        ActiveSessionTracker.clearActiveSession(sessionId);
+
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, new HomeFragment())
+                .commit();
+    }
+
     private void updateScoreText() {
         playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
         playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
@@ -399,63 +655,26 @@ public class AssociationsFragment extends Fragment {
         button.setTextColor(Color.WHITE);
     }
 
-    private void revealColumnFields(String column) {
-        if ("A".equals(column)) {
-            revealFieldIfHidden(a1Button);
-            revealFieldIfHidden(a2Button);
-            revealFieldIfHidden(a3Button);
-            revealFieldIfHidden(a4Button);
-        } else if ("B".equals(column)) {
-            revealFieldIfHidden(b1Button);
-            revealFieldIfHidden(b2Button);
-            revealFieldIfHidden(b3Button);
-            revealFieldIfHidden(b4Button);
-        } else if ("C".equals(column)) {
-            revealFieldIfHidden(c1Button);
-            revealFieldIfHidden(c2Button);
-            revealFieldIfHidden(c3Button);
-            revealFieldIfHidden(c4Button);
-        } else {
-            revealFieldIfHidden(d1Button);
-            revealFieldIfHidden(d2Button);
-            revealFieldIfHidden(d3Button);
-            revealFieldIfHidden(d4Button);
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
         }
     }
 
-    private void revealFieldIfHidden(Button button) {
-        String value = hiddenValues.get(button);
-
-        if (value == null) {
-            return;
+    private void showToast(String message) {
+        if (isAdded() && message != null && !message.isBlank()) {
+            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
         }
-
-        button.setText(value);
-        button.setEnabled(false);
-        setButtonColor(button, REVEALED_COLOR);
-    }
-
-    private void revealAllColumns() {
-        revealColumnFields("A");
-        revealColumnFields("B");
-        revealColumnFields("C");
-        revealColumnFields("D");
-
-        revealSolvedColumnButton(columnASolutionButton, association.getColumnA());
-        revealSolvedColumnButton(columnBSolutionButton, association.getColumnB());
-        revealSolvedColumnButton(columnCSolutionButton, association.getColumnC());
-        revealSolvedColumnButton(columnDSolutionButton, association.getColumnD());
-    }
-
-    private void revealSolvedColumnButton(Button button, AssociationColumn column) {
-        button.setText(column.getSolution());
-        button.setEnabled(false);
-        setButtonColor(button, CORRECT_COLOR);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (sessionListenerHandle != null) {
+            sessionListenerHandle.remove();
+            sessionListenerHandle = null;
+        }
         stopTimer();
     }
 }

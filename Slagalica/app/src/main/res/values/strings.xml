@@ -244,4 +244,15 @@
     <string name="nav_logout">Logout</string>
 
     <string name="menu">Menu</string>
+
+    <string name="waiting_for_match_title">Tražimo protivnika...</string>
+    <string name="waiting_for_match_message">Molimo sačekaj dok se drugi igrač poveže.</string>
+    <string name="cancel_matchmaking">Otkaži</string>
+    <string name="server_url_title">WebSocket server</string>
+    <string name="server_url_message">Na početnoj strani zadrži dugme "Igraj igru" da promeniš server za emulator, telefon ili demo mrežu.</string>
+    <string name="server_url_hint">ws://192.168.1.50:8080</string>
+    <string name="save_server_url">Sačuvaj</string>
+    <string name="reset_server_url">Vrati podrazumevano</string>
+    <string name="server_url_saved">Server je sačuvan.</string>
+    <string name="server_url_reset">Server je vraćen na podrazumevani.</string>
 </resources>

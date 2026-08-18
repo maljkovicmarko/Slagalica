@@ -2,6 +2,7 @@ package com.example.slagalica.Activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,12 +12,15 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.slagalica.Fragments.LoginFragment;
 import com.example.slagalica.R;
+import com.example.slagalica.Services.ActiveSessionTracker;
+import com.example.slagalica.Services.WebSocketGameClient;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -56,5 +60,30 @@ public class MainActivity extends AppCompatActivity {
             overlay.bringToFront();
             navbar.bringToFront();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (isChangingConfigurations()) {
+            return;
+        }
+
+        String activeSessionId = ActiveSessionTracker.getActiveSessionId();
+        if (activeSessionId == null) {
+            return;
+        }
+
+        ActiveSessionTracker.clearActiveSession(activeSessionId);
+        WebSocketGameClient.getInstance().abandonSession(activeSessionId, new WebSocketGameClient.OnRequestResult() {
+            @Override
+            public void onSuccess(org.json.JSONObject data) {
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+            }
+        });
     }
 }

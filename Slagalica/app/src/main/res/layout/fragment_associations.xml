@@ -65,7 +65,8 @@
                     android:id="@+id/columnASolutionButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="Rešenje kolone" />
+                    android:text="Rešenje kolone"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <LinearLayout
@@ -89,7 +90,8 @@
                     android:id="@+id/columnBSolutionButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="Rešenje kolone" />
+                    android:text="Rešenje kolone"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
@@ -99,7 +101,7 @@
             android:id="@+id/finalSolutionInput"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:text="Konačno rešenje"
+            android:hint="Konačno rešenje"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp" />
 
@@ -125,7 +127,8 @@
                     android:id="@+id/columnCSolutionButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="Rešenje kolone" />
+                    android:text="Rešenje kolone"
+                    android:visibility="gone" />
 
                 <Button android:id="@+id/c1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C1" />
                 <Button android:id="@+id/c2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="C2" />
@@ -145,13 +148,14 @@
                     android:id="@+id/columnDInput"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:hint="Rešenje C" />
+                    android:hint="Rešenje D" />
 
                 <Button
                     android:id="@+id/columnDSolutionButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="Rešenje kolone" />
+                    android:text="Rešenje kolone"
+                    android:visibility="gone" />
                 <Button android:id="@+id/d1Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D1" />
                 <Button android:id="@+id/d2Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D2" />
                 <Button android:id="@+id/d3Button" android:layout_width="match_parent" android:layout_height="44dp" android:text="D3" />
@@ -162,10 +166,27 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/submitColumnSolutionButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Potvrdi rešenje kolone"
+            android:visibility="gone"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <Button
             android:id="@+id/guessFinalSolutionButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/guess_final_solution"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/passTurnButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Preskoči potez"
             android:layout_marginBottom="20dp" />
 
         <TextView

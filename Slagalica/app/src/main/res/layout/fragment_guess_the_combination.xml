@@ -89,6 +89,12 @@
                 <ImageView android:id="@+id/attempt6Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
                 <TextView android:id="@+id/attempt6Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
 
+                <ImageView android:id="@+id/attempt7Slot1" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt7Slot2" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt7Slot3" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <ImageView android:id="@+id/attempt7Slot4" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:background="@android:color/darker_gray" android:padding="4dp" android:scaleType="fitCenter" />
+                <TextView android:id="@+id/attempt7Result" android:layout_width="0dp" android:layout_height="44dp" android:layout_columnWeight="1" android:layout_margin="3dp" android:gravity="center" />
+
             </GridLayout>
 
             <LinearLayout

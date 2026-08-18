@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Slagalica"
 include ':app'
+include ':ws-server-java'
+include ':shared'
