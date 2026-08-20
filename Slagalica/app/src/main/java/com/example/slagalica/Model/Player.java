@@ -4,11 +4,13 @@ public class Player {
     private String id;
     private String email;
     private String username;
+    private String usernameNormalized;
     private String region;
     private String avatarBase64;
 
     private int tokens;
     private int totalStars;
+    private int monthlyRank;
     private String leagueName;
     private PlayerStatistics statistics;
 
@@ -29,6 +31,14 @@ public class Player {
 
     public void setTotalStars(int totalStars) {
         this.totalStars = totalStars;
+    }
+
+    public int getMonthlyRank() {
+        return monthlyRank;
+    }
+
+    public void setMonthlyRank(int monthlyRank) {
+        this.monthlyRank = monthlyRank;
     }
 
     public String getLeagueName() {
@@ -77,6 +87,14 @@ public class Player {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getUsernameNormalized() {
+        return usernameNormalized;
+    }
+
+    public void setUsernameNormalized(String usernameNormalized) {
+        this.usernameNormalized = usernameNormalized;
     }
 
     public String getRegion() {

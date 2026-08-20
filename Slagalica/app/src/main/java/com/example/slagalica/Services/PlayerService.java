@@ -8,6 +8,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Locale;
+
 public class PlayerService {
 
     public interface OnFailureCallback {
@@ -29,6 +31,34 @@ public class PlayerService {
                                Runnable onSuccess,
                                OnFailureCallback onFailure) {
 
+        String usernameNormalized = normalizeUsername(username);
+        db.collection("players")
+                .whereEqualTo("usernameNormalized", usernameNormalized)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        onFailure.onFailure("Username is already taken");
+                        return;
+                    }
+
+                    checkLegacyUsernameAndCreate(
+                            email,
+                            username,
+                            region,
+                            password,
+                            onSuccess,
+                            onFailure
+                    );
+                })
+                .addOnFailureListener(e -> onFailure.onFailure(e.getMessage()));
+    }
+
+    private void checkLegacyUsernameAndCreate(String email,
+                                              String username,
+                                              String region,
+                                              String password,
+                                              Runnable onSuccess,
+                                              OnFailureCallback onFailure) {
         db.collection("players")
                 .whereEqualTo("username", username)
                 .get()
@@ -37,7 +67,6 @@ public class PlayerService {
                         onFailure.onFailure("Username is already taken");
                         return;
                     }
-
                     createPlayer(email, username, region, password, onSuccess, onFailure);
                 })
                 .addOnFailureListener(e -> onFailure.onFailure(e.getMessage()));
@@ -66,6 +95,7 @@ public class PlayerService {
                             region
                     );
 
+                    player.setUsernameNormalized(normalizeUsername(username));
                     player.setTokens(120);
                     player.setTotalStars(340);
                     player.setLeagueName("Bronze League");
@@ -205,5 +235,9 @@ public class PlayerService {
         statistics.setTotalGamesLost(47);
 
         return statistics;
+    }
+
+    private String normalizeUsername(String username) {
+        return username == null ? "" : username.trim().toLowerCase(Locale.ROOT);
     }
 }

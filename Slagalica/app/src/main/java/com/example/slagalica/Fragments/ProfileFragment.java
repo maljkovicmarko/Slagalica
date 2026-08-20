@@ -24,6 +24,7 @@ import com.example.slagalica.Model.Player;
 import com.example.slagalica.Model.PlayerStatistics;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.PlayerService;
+import com.example.slagalica.Util.FriendQrCode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -117,7 +118,10 @@ public class ProfileFragment extends Fragment {
         menuButton.setVisibility(View.VISIBLE);
 
         qrCodeImage = view.findViewById(R.id.qrCodeImage);
-        generatePlaceholderQrCode();
+        FirebaseUser firebaseUser = auth.getCurrentUser();
+        if (firebaseUser != null) {
+            generateQrCode(FriendQrCode.buildPayload(firebaseUser.getUid()));
+        }
 
         loadCurrentPlayer();
 
@@ -363,12 +367,10 @@ public class ProfileFragment extends Fragment {
                 .commit();
     }
 
-    private void generatePlaceholderQrCode() {
+    private void generateQrCode(String payload) {
         try {
-            String dummyText = "SLAGALICA_PLAYER_PLACEHOLDER";
-
             BitMatrix bitMatrix = new MultiFormatWriter().encode(
-                    dummyText,
+                    payload,
                     BarcodeFormat.QR_CODE,
                     300,
                     300

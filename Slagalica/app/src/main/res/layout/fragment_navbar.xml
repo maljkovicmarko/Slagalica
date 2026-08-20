@@ -72,6 +72,35 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/nav_friends"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/navbar_button_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp">
+
+            <ImageView
+                android:layout_width="@dimen/navbar_icon_size"
+                android:layout_height="@dimen/navbar_icon_size"
+                android:contentDescription="@string/nav_friends"
+                android:scaleType="fitCenter"
+                android:src="@drawable/profile" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/nav_friends"
+                android:textColor="@android:color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/nav_logout"

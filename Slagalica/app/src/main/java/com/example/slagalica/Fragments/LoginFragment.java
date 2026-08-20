@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.slagalica.Activities.MainActivity;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.PlayerService;
 
@@ -119,6 +120,9 @@ public class LoginFragment extends Fragment {
                 password,
                 () -> {
                     loginButton.setEnabled(true);
+                    if (requireActivity() instanceof MainActivity) {
+                        ((MainActivity) requireActivity()).connectGameSocketForCurrentUser();
+                    }
 
                     requireActivity()
                             .getSupportFragmentManager()
