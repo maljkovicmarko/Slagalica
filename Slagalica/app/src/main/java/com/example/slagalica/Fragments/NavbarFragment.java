@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.slagalica.Activities.MainActivity;
 import com.example.slagalica.R;
+import com.example.slagalica.Services.WebSocketGameClient;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -87,7 +88,19 @@ public class NavbarFragment extends Fragment {
             ((MainActivity) requireActivity()).toggleNavbar();
         });
 
+        view.findViewById(R.id.nav_friends).setOnClickListener(v -> {
+            requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, new FriendsFragment())
+                    .addToBackStack(null)
+                    .commit();
+
+            ((MainActivity) requireActivity()).toggleNavbar();
+        });
+
         view.findViewById(R.id.nav_logout).setOnClickListener(v -> {
+            WebSocketGameClient.getInstance().disconnect();
             FirebaseAuth.getInstance().signOut();
 
             requireActivity()

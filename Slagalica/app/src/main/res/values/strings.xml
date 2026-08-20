@@ -238,6 +238,7 @@
     <string name="nav_home">Home</string>
 
     <string name="nav_profile">Profile</string>
+    <string name="nav_friends">Friends</string>
 
     <string name="nav_stats">Stats</string>
 
@@ -255,4 +256,41 @@
     <string name="reset_server_url">Vrati podrazumevano</string>
     <string name="server_url_saved">Server je sačuvan.</string>
     <string name="server_url_reset">Server je vraćen na podrazumevani.</string>
+
+    <string name="friends_title">Prijatelji</string>
+    <string name="my_friends">Moji prijatelji</string>
+    <string name="search_friend_hint">Korisničko ime</string>
+    <string name="search">Pretraži</string>
+    <string name="add_friend">Dodaj</string>
+    <string name="friend_added">Prijatelj je dodat.</string>
+    <string name="friend_avatar">Profilna slika prijatelja</string>
+    <string name="friend_search_too_short">Unesite najmanje 2 znaka.</string>
+    <string name="loading_friends">Učitavanje prijatelja…</string>
+    <string name="friends_loaded">Lista prijatelja</string>
+    <string name="no_friends">Još nemaš prijatelje.</string>
+    <string name="searching_players">Pretraga…</string>
+    <string name="no_players_found">Nema pronađenih igrača.</string>
+    <string name="search_results">Rezultati pretrage</string>
+    <string name="friend_monthly_rank_value">Mesečni rang: %1$d</string>
+    <string name="friend_monthly_rank_unavailable">Mesečni rang: —</string>
+    <string name="friend_stars_value">Zvezde: %1$d</string>
+    <string name="no_league">Bez lige</string>
+    <string name="challenge_friend">Igraj</string>
+    <string name="cancel_friend_invite">Prekini</string>
+    <string name="friend_invite_sent">Zahtev za partiju je poslat.</string>
+    <string name="friend_invite_cancelled">Zahtev za partiju je prekinut.</string>
+    <string name="friend_invite_rejected">Prijatelj je odbio partiju.</string>
+    <string name="friend_invite_expired">Zahtev za partiju je istekao.</string>
+    <string name="friend_invite_title">Nova prijateljska partija</string>
+    <string name="friend_invite_message">Prijatelj te je pozvao na partiju.</string>
+    <string name="accept_friend_invite">Prihvati</string>
+    <string name="reject_friend_invite">Odbij</string>
+    <string name="friend_not_available">Prijatelj trenutno nije dostupan za partiju.</string>
+    <string name="scan_friend_qr">Skeniraj QR kod</string>
+    <string name="qr_camera_permission_required">Dozvola za kameru je potrebna za skeniranje QR koda.</string>
+    <string name="qr_scan_cancelled">Skeniranje QR koda je prekinuto.</string>
+    <string name="qr_scan_failed">QR kod nije prepoznat.</string>
+    <string name="qr_invalid_friend_code">QR kod nije validan kod prijatelja.</string>
+    <string name="scan_friend_qr_with_camera">Skeniraj QR kod kamerom i otvori Slagalica link.</string>
+    <string name="qr_camera_not_available">Kamera nije dostupna.</string>
 </resources>

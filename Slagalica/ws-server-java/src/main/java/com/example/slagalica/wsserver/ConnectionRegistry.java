@@ -20,6 +20,11 @@ public class ConnectionRegistry {
         return uid == null ? null : socketsByUid.get(uid);
     }
 
+    public boolean isConnected(String uid) {
+        WebSocket socket = getSocket(uid);
+        return socket != null && socket.isOpen();
+    }
+
     public String getUid(WebSocket connection) {
         return connection == null ? null : connection.getAttachment();
     }

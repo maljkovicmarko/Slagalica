@@ -6,9 +6,11 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,6 +51,15 @@ public class WebSocketGameClient {
         void onFailure(String errorMessage);
     }
 
+    public interface OnFriendInviteListener {
+        void onInviteReceived(FriendInvite invite);
+        void onInviteAccepted(FriendInvite invite, SessionSnapshot session);
+        void onInviteRejected(FriendInvite invite);
+        void onInviteCancelled(FriendInvite invite);
+        void onInviteExpired(FriendInvite invite);
+        void onFailure(String errorMessage);
+    }
+
     private static WebSocketGameClient instance;
 
     private final OkHttpClient httpClient;
@@ -56,6 +67,7 @@ public class WebSocketGameClient {
     private final Map<String, OnRequestResult> pendingRequests;
     private final Map<String, CopyOnWriteArrayList<OnSessionListener>> sessionListeners;
     private final CopyOnWriteArrayList<OnMatchmakingListener> matchmakingListeners;
+    private final CopyOnWriteArrayList<OnFriendInviteListener> friendInviteListeners;
     private final Map<String, SessionSnapshot> lastSessionSnapshots;
     private final List<OnConnected> pendingConnectCallbacks;
 
@@ -71,6 +83,7 @@ public class WebSocketGameClient {
         pendingRequests = new ConcurrentHashMap<>();
         sessionListeners = new ConcurrentHashMap<>();
         matchmakingListeners = new CopyOnWriteArrayList<>();
+        friendInviteListeners = new CopyOnWriteArrayList<>();
         lastSessionSnapshots = new ConcurrentHashMap<>();
         pendingConnectCallbacks = new ArrayList<>();
         serverUrl = WebSocketConfig.getDefaultServerUrl();
@@ -194,6 +207,11 @@ public class WebSocketGameClient {
         return () -> matchmakingListeners.remove(listener);
     }
 
+    public ListenerHandle addFriendInviteListener(OnFriendInviteListener listener) {
+        friendInviteListeners.add(listener);
+        return () -> friendInviteListeners.remove(listener);
+    }
+
     public ListenerHandle subscribeSession(String sessionId, OnSessionListener listener) {
         sessionListeners.computeIfAbsent(sessionId, ignored -> new CopyOnWriteArrayList<>()).add(listener);
 
@@ -261,6 +279,48 @@ public class WebSocketGameClient {
                 callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to create game action.");
             }
         }
+    }
+
+    public void getFriendStatuses(List<String> friendIds, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            JSONArray ids = new JSONArray();
+            if (friendIds != null) {
+                for (String friendId : friendIds) {
+                    ids.put(friendId);
+                }
+            }
+            payload.put("friendIds", ids);
+            request("get_friend_statuses", payload, callback);
+        } catch (JSONException e) {
+            if (callback != null) {
+                callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to request friend statuses.");
+            }
+        }
+    }
+
+    public void sendFriendInvite(String friendUid, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("friendUid", friendUid);
+            request("send_friend_invite", payload, callback);
+        } catch (JSONException e) {
+            if (callback != null) {
+                callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to send friendly game invite.");
+            }
+        }
+    }
+
+    public void acceptFriendInvite(String inviteId, OnRequestResult callback) {
+        sendFriendInviteDecision("accept_friend_invite", inviteId, callback);
+    }
+
+    public void rejectFriendInvite(String inviteId, OnRequestResult callback) {
+        sendFriendInviteDecision("reject_friend_invite", inviteId, callback);
+    }
+
+    public void cancelFriendInvite(String inviteId, OnRequestResult callback) {
+        sendFriendInviteDecision("cancel_friend_invite", inviteId, callback);
     }
 
     public synchronized void request(String type, JSONObject payload, OnRequestResult callback) {
@@ -347,6 +407,16 @@ public class WebSocketGameClient {
                 handleMatchFound(data);
             } else if ("session_state".equals(type)) {
                 handleSessionState(data);
+            } else if ("friend_invite_received".equals(type)) {
+                handleFriendInviteReceived(data);
+            } else if ("friend_invite_accepted".equals(type)) {
+                handleFriendInviteAccepted(data);
+            } else if ("friend_invite_rejected".equals(type)) {
+                handleFriendInviteRejected(data);
+            } else if ("friend_invite_cancelled".equals(type)) {
+                handleFriendInviteCancelled(data);
+            } else if ("friend_invite_expired".equals(type)) {
+                handleFriendInviteExpired(data);
             }
         } catch (JSONException e) {
             dispatchListenerFailure("Invalid server message.");
@@ -420,6 +490,64 @@ public class WebSocketGameClient {
         notifySessionListeners(sessionId, snapshot);
     }
 
+    private void handleFriendInviteReceived(JSONObject data) {
+        FriendInvite invite = FriendInvite.fromJson(data);
+        if (invite == null) {
+            return;
+        }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onInviteReceived(invite));
+        }
+    }
+
+    private void handleFriendInviteAccepted(JSONObject data) {
+        FriendInvite invite = FriendInvite.fromJson(data);
+        JSONObject sessionJson = data == null ? null : data.optJSONObject("session");
+        if (invite == null || sessionJson == null) {
+            return;
+        }
+
+        SessionSnapshot session = new SessionSnapshot(sessionJson);
+        String sessionId = session.getString("sessionId");
+        if (sessionId != null) {
+            lastSessionSnapshots.put(sessionId, session);
+            notifySessionListeners(sessionId, session);
+        }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onInviteAccepted(invite, session));
+        }
+    }
+
+    private void handleFriendInviteRejected(JSONObject data) {
+        FriendInvite invite = FriendInvite.fromJson(data);
+        if (invite == null) {
+            return;
+        }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onInviteRejected(invite));
+        }
+    }
+
+    private void handleFriendInviteCancelled(JSONObject data) {
+        FriendInvite invite = FriendInvite.fromJson(data);
+        if (invite == null) {
+            return;
+        }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onInviteCancelled(invite));
+        }
+    }
+
+    private void handleFriendInviteExpired(JSONObject data) {
+        FriendInvite invite = FriendInvite.fromJson(data);
+        if (invite == null) {
+            return;
+        }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onInviteExpired(invite));
+        }
+    }
+
     private void notifySessionListeners(String sessionId, SessionSnapshot snapshot) {
         CopyOnWriteArrayList<OnSessionListener> listeners = sessionListeners.get(sessionId);
         if (listeners == null) {
@@ -459,9 +587,24 @@ public class WebSocketGameClient {
         for (OnMatchmakingListener listener : matchmakingListeners) {
             post(() -> listener.onFailure(errorMessage));
         }
+        for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onFailure(errorMessage));
+        }
         for (CopyOnWriteArrayList<OnSessionListener> listeners : sessionListeners.values()) {
             for (OnSessionListener listener : listeners) {
                 post(() -> listener.onFailure(errorMessage));
+            }
+        }
+    }
+
+    private void sendFriendInviteDecision(String type, String inviteId, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("inviteId", inviteId);
+            request(type, payload, callback);
+        } catch (JSONException e) {
+            if (callback != null) {
+                callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to send friendly game response.");
             }
         }
     }
@@ -484,6 +627,56 @@ public class WebSocketGameClient {
         @Override
         public void onFailure(String errorMessage) {
             listener.onFailure(errorMessage);
+        }
+    }
+
+    public static final class FriendInvite {
+        private final String inviteId;
+        private final String inviterUid;
+        private final String inviteeUid;
+        private final long createdAtMs;
+        private final long expiresAtMs;
+        private final long serverNowMs;
+
+        private FriendInvite(JSONObject json) {
+            inviteId = json.optString("inviteId", null);
+            inviterUid = json.optString("inviterUid", null);
+            inviteeUid = json.optString("inviteeUid", null);
+            createdAtMs = json.optLong("createdAtMs", 0L);
+            expiresAtMs = json.optLong("expiresAtMs", 0L);
+            serverNowMs = json.optLong("serverNowMs", System.currentTimeMillis());
+        }
+
+        public static FriendInvite fromJson(JSONObject json) {
+            if (json == null) {
+                return null;
+            }
+            FriendInvite invite = new FriendInvite(json);
+            return invite.inviteId == null || invite.inviteId.isBlank() ? null : invite;
+        }
+
+        public String getInviteId() {
+            return inviteId;
+        }
+
+        public String getInviterUid() {
+            return inviterUid;
+        }
+
+        public String getInviteeUid() {
+            return inviteeUid;
+        }
+
+        public long getCreatedAtMs() {
+            return createdAtMs;
+        }
+
+        public long getExpiresAtMs() {
+            return expiresAtMs;
+        }
+
+        public long getServerNowMs() {
+            return serverNowMs;
         }
     }
 }

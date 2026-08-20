@@ -57,6 +57,19 @@ public class SessionService {
         return new ArrayList<>(sessionIdsByUser.getOrDefault(uid, Collections.emptySet()));
     }
 
+    public boolean isUserInActiveSession(String uid) {
+        if (uid == null || uid.isBlank()) {
+            return false;
+        }
+        for (String sessionId : sessionIdsByUser.getOrDefault(uid, Collections.emptySet())) {
+            SessionState session = sessionsById.get(sessionId);
+            if (session != null && "active".equals(session.getStatus())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public SessionState createSession(String player1Uid, String player2Uid, String sessionType) {
         String sessionId = UUID.randomUUID().toString();
         SessionState session = new SessionState(

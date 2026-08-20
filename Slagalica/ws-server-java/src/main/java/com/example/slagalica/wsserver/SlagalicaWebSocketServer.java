@@ -3,6 +3,7 @@ package com.example.slagalica.wsserver;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,11 +15,13 @@ import java.util.concurrent.TimeUnit;
 public class SlagalicaWebSocketServer extends WebSocketServer {
 
     private static final String SESSION_TYPE_RANKED = "ranked";
+    private static final String SESSION_TYPE_FRIENDLY = "friendly";
 
     private final ConnectionRegistry connectionRegistry;
     private final SocketEventSender eventSender;
     private final SessionService sessionService;
     private final MatchmakingService matchmakingService;
+    private final FriendInviteService friendInviteService;
     private final CountDownLatch startupLatch;
 
     private volatile boolean started;
@@ -30,6 +33,7 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         this.eventSender = new SocketEventSender(connectionRegistry);
         this.sessionService = new SessionService(this::emitSessionState);
         this.matchmakingService = new MatchmakingService(sessionService, SESSION_TYPE_RANKED);
+        this.friendInviteService = new FriendInviteService();
         this.startupLatch = new CountDownLatch(1);
     }
 
@@ -76,6 +80,21 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
                     break;
                 case "game_action":
                     handleGameAction(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "get_friend_statuses":
+                    handleGetFriendStatuses(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "send_friend_invite":
+                    handleSendFriendInvite(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "accept_friend_invite":
+                    handleAcceptFriendInvite(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "reject_friend_invite":
+                    handleRejectFriendInvite(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "cancel_friend_invite":
+                    handleCancelFriendInvite(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
                     break;
                 default:
                     eventSender.reply(conn, protocolMessage.getRequestId(), false, null, "Unknown message type: " + type);
@@ -283,6 +302,124 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         }
     }
 
+    private void handleGetFriendStatuses(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+
+        JSONArray friendIds = payload.optJSONArray("friendIds");
+        JSONArray statuses = new JSONArray();
+        if (friendIds != null) {
+            for (int index = 0; index < friendIds.length(); index++) {
+                String friendUid = friendIds.optString(index, null);
+                if (friendUid == null || friendUid.isBlank()) {
+                    continue;
+                }
+                JSONObject status = new JSONObject();
+                status.put("uid", friendUid);
+                status.put("online", connectionRegistry.isConnected(friendUid));
+                status.put("available", isAvailableForFriendlyGame(friendUid));
+                statuses.put(status);
+            }
+        }
+
+        JSONObject data = new JSONObject();
+        data.put("statuses", statuses);
+        eventSender.reply(conn, requestId, true, data, null);
+    }
+
+    private void handleSendFriendInvite(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+
+        String inviteeUid = payload.optString("friendUid", null);
+        FriendInviteService.InviteResult result = friendInviteService.createInvite(
+                uid,
+                inviteeUid,
+                this::isAvailableForFriendlyGame,
+                this::emitFriendInviteExpired
+        );
+        if (!result.isAccepted()) {
+            eventSender.reply(conn, requestId, false, null, result.getErrorMessage());
+            return;
+        }
+
+        FriendInviteService.FriendInvite invite = result.getInvite();
+        JSONObject data = inviteToJson(invite);
+        eventSender.reply(conn, requestId, true, data, null);
+        eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_received", data);
+    }
+
+    private void handleAcceptFriendInvite(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+
+        String inviteId = payload.optString("inviteId", null);
+        FriendInviteService.InviteResult result = friendInviteService.acceptInvite(uid, inviteId, this::isAvailableForFriendlyGame);
+        if (!result.isAccepted()) {
+            eventSender.reply(conn, requestId, false, null, result.getErrorMessage());
+            return;
+        }
+
+        FriendInviteService.FriendInvite invite = result.getInvite();
+        SessionState session = sessionService.createSession(
+                invite.getInviterUid(),
+                invite.getInviteeUid(),
+                SESSION_TYPE_FRIENDLY
+        );
+
+        JSONObject data = inviteToJson(invite);
+        data.put("sessionId", session.getSessionId());
+        data.put("session", session.toJson());
+        eventSender.reply(conn, requestId, true, data, null);
+        eventSender.sendEventTo(invite.getInviterUid(), "friend_invite_accepted", data);
+        eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_accepted", data);
+        emitMatchFound(session);
+    }
+
+    private void handleRejectFriendInvite(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+
+        String inviteId = payload.optString("inviteId", null);
+        FriendInviteService.InviteResult result = friendInviteService.rejectInvite(uid, inviteId);
+        if (!result.isAccepted()) {
+            eventSender.reply(conn, requestId, false, null, result.getErrorMessage());
+            return;
+        }
+
+        FriendInviteService.FriendInvite invite = result.getInvite();
+        JSONObject data = inviteToJson(invite);
+        eventSender.reply(conn, requestId, true, data, null);
+        eventSender.sendEventTo(invite.getInviterUid(), "friend_invite_rejected", data);
+    }
+
+    private void handleCancelFriendInvite(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+
+        String inviteId = payload.optString("inviteId", null);
+        FriendInviteService.InviteResult result = friendInviteService.cancelInvite(uid, inviteId);
+        if (!result.isAccepted()) {
+            eventSender.reply(conn, requestId, false, null, result.getErrorMessage());
+            return;
+        }
+
+        FriendInviteService.FriendInvite invite = result.getInvite();
+        JSONObject data = inviteToJson(invite);
+        eventSender.reply(conn, requestId, true, data, null);
+        eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_cancelled", data);
+    }
+
     private SessionState requireAuthorizedSession(WebSocket conn, String requestId, String uid, String sessionId) {
         SessionState session = requireSession(conn, requestId, sessionId);
         if (session == null) {
@@ -326,6 +463,7 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         }
 
         matchmakingService.removeUser(uid);
+        friendInviteService.removeUser(uid, this::emitFriendInviteCancelledByDisconnect);
         List<SessionState> disconnectedSessions = sessionService.markUserDisconnected(uid);
         for (SessionState session : disconnectedSessions) {
             emitSessionState(session);
@@ -357,5 +495,32 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
 
     private void emitSessionStateTo(String uid, SessionState session) {
         eventSender.sendEventTo(uid, "session_state", session.toJson());
+    }
+
+    private boolean isAvailableForFriendlyGame(String uid) {
+        return connectionRegistry.isConnected(uid) && !sessionService.isUserInActiveSession(uid);
+    }
+
+    private JSONObject inviteToJson(FriendInviteService.FriendInvite invite) {
+        JSONObject data = new JSONObject();
+        data.put("inviteId", invite.getInviteId());
+        data.put("inviterUid", invite.getInviterUid());
+        data.put("inviteeUid", invite.getInviteeUid());
+        data.put("createdAtMs", invite.getCreatedAtMs());
+        data.put("expiresAtMs", invite.getExpiresAtMs());
+        data.put("serverNowMs", System.currentTimeMillis());
+        return data;
+    }
+
+    private void emitFriendInviteExpired(FriendInviteService.FriendInvite invite) {
+        JSONObject data = inviteToJson(invite);
+        eventSender.sendEventTo(invite.getInviterUid(), "friend_invite_expired", data);
+        eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_expired", data);
+    }
+
+    private void emitFriendInviteCancelledByDisconnect(FriendInviteService.FriendInvite invite) {
+        JSONObject data = inviteToJson(invite);
+        eventSender.sendEventTo(invite.getInviterUid(), "friend_invite_cancelled", data);
+        eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_cancelled", data);
     }
 }
