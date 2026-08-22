@@ -28,8 +28,13 @@ public class SessionService {
     }
 
     public SessionService(SessionChangeListener sessionChangeListener) {
+        this(sessionChangeListener, new LeaderboardCycleService());
+    }
+
+    SessionService(SessionChangeListener sessionChangeListener,
+                   LeaderboardCycleService leaderboardCycleService) {
         generalKnowledgeQuestionProvider = new GeneralKnowledgeQuestionProvider();
-        rankedPlayerProgressService = new RankedPlayerProgressService();
+        rankedPlayerProgressService = new RankedPlayerProgressService(leaderboardCycleService);
         gameEngineRegistry = new GameEngineRegistry();
         matchEngine = new MatchEngine();
         phaseTimeoutExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {

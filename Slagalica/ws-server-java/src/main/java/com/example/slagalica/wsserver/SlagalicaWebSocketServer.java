@@ -28,10 +28,15 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
     private volatile Throwable startupFailure;
 
     public SlagalicaWebSocketServer(InetSocketAddress address) {
+        this(address, new LeaderboardCycleService());
+    }
+
+    public SlagalicaWebSocketServer(InetSocketAddress address,
+                                    LeaderboardCycleService leaderboardCycleService) {
         super(address);
         this.connectionRegistry = new ConnectionRegistry();
         this.eventSender = new SocketEventSender(connectionRegistry);
-        this.sessionService = new SessionService(this::emitSessionState);
+        this.sessionService = new SessionService(this::emitSessionState, leaderboardCycleService);
         this.matchmakingService = new MatchmakingService(sessionService, SESSION_TYPE_RANKED);
         this.friendInviteService = new FriendInviteService();
         this.startupLatch = new CountDownLatch(1);

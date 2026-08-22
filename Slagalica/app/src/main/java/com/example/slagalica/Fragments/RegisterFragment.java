@@ -5,27 +5,36 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.slagalica.Model.Region;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.PlayerService;
+import com.example.slagalica.Services.RegionService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RegisterFragment extends Fragment {
 
     private EditText emailInput;
     private EditText usernameInput;
-    private EditText regionInput;
+    private Spinner regionSpinner;
     private EditText passwordInput;
     private EditText repeatPasswordInput;
     private Button registerButton;
     private TextView loginText;
 
     private PlayerService playerService;
+    private RegionService regionService;
+    private final List<Region> regions = new ArrayList<>();
 
     public RegisterFragment() {
     }
@@ -34,6 +43,7 @@ public class RegisterFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         playerService = new PlayerService();
+        regionService = new RegionService();
     }
 
     @Override
@@ -44,13 +54,15 @@ public class RegisterFragment extends Fragment {
 
         emailInput = view.findViewById(R.id.emailInput);
         usernameInput = view.findViewById(R.id.usernameInput);
-        regionInput = view.findViewById(R.id.regionInput);
+        regionSpinner = view.findViewById(R.id.regionSpinner);
         passwordInput = view.findViewById(R.id.passwordInput);
         repeatPasswordInput = view.findViewById(R.id.repeatPasswordInput);
         registerButton = view.findViewById(R.id.registerButton);
         loginText = view.findViewById(R.id.loginText);
 
         registerButton.setOnClickListener(v -> registerPlayer());
+        registerButton.setEnabled(false);
+        loadRegions();
 
         loginText.setOnClickListener(v -> {
             requireActivity()
@@ -64,9 +76,9 @@ public class RegisterFragment extends Fragment {
     private void registerPlayer() {
         String email = emailInput.getText().toString().trim();
         String username = usernameInput.getText().toString().trim();
-        String region = regionInput.getText().toString().trim();
         String password = passwordInput.getText().toString().trim();
         String repeatedPassword = repeatPasswordInput.getText().toString().trim();
+        Region selectedRegion = selectedRegion();
 
         if (TextUtils.isEmpty(email)) {
             emailInput.setError("Email is required");
@@ -78,8 +90,8 @@ public class RegisterFragment extends Fragment {
             return;
         }
 
-        if (TextUtils.isEmpty(region)) {
-            regionInput.setError("Region is required");
+        if (selectedRegion == null) {
+            Toast.makeText(requireContext(), R.string.region_required, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -103,7 +115,7 @@ public class RegisterFragment extends Fragment {
         playerService.registerPlayer(
                 email,
                 username,
-                region,
+                selectedRegion,
                 password,
                 () -> {
                     registerButton.setEnabled(true);
@@ -128,5 +140,41 @@ public class RegisterFragment extends Fragment {
                     ).show();
                 }
         );
+    }
+
+    private void loadRegions() {
+        regionService.loadActiveRegions(
+                loadedRegions -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    regions.clear();
+                    regions.addAll(loadedRegions);
+
+                    ArrayAdapter<Region> adapter = new ArrayAdapter<>(
+                            requireContext(),
+                            android.R.layout.simple_spinner_item,
+                            regions
+                    );
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    regionSpinner.setAdapter(adapter);
+                    registerButton.setEnabled(!regions.isEmpty());
+                },
+                errorMessage -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    registerButton.setEnabled(false);
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                }
+        );
+    }
+
+    private Region selectedRegion() {
+        Object selectedItem = regionSpinner.getSelectedItem();
+        if (selectedItem instanceof Region) {
+            return (Region) selectedItem;
+        }
+        return null;
     }
 }

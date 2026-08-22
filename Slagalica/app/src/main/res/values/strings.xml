@@ -239,6 +239,8 @@
 
     <string name="nav_profile">Profile</string>
     <string name="nav_friends">Friends</string>
+    <string name="nav_leaderboard">Rang</string>
+    <string name="nav_regions">Regioni</string>
 
     <string name="nav_stats">Stats</string>
 
@@ -293,4 +295,19 @@
     <string name="qr_invalid_friend_code">QR kod nije validan kod prijatelja.</string>
     <string name="scan_friend_qr_with_camera">Skeniraj QR kod kamerom i otvori Slagalica link.</string>
     <string name="qr_camera_not_available">Kamera nije dostupna.</string>
+    <string name="leaderboard_title">Rang lista</string>
+    <string name="weekly_leaderboard">Nedeljna</string>
+    <string name="monthly_leaderboard">Mesečna</string>
+    <string name="leaderboard_cycle_range">%1$s - %2$s</string>
+    <string name="loading_leaderboard">Učitavanje rang liste…</string>
+    <string name="leaderboard_load_failed">Rang lista nije učitana.</string>
+    <string name="empty_leaderboard">Nema rangiranih igrača u ovom ciklusu.</string>
+    <string name="leaderboard_count">Rangirano igrača: %1$d</string>
+    <string name="regions_title">Regioni</string>
+    <string name="loading_regions">Učitavanje regiona…</string>
+    <string name="regions_load_failed">Regioni nisu učitani.</string>
+    <string name="empty_regions">Nema registrovanih regiona.</string>
+    <string name="regions_count">Registrovanih regiona: %1$d</string>
+    <string name="regions_monthly_count">Mesečna rang lista regiona: %1$d</string>
+    <string name="region_stats_message">Prva mesta: %1$d\nDruga mesta: %2$d\nTreća mesta: %3$d\nZvezde u ciklusu: %4$d\nAktivni igrači: %5$d\nRegistrovani igrači: %6$d</string>
 </resources>

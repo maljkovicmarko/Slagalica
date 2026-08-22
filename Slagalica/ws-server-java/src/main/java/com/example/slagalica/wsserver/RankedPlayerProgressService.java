@@ -15,10 +15,25 @@ public class RankedPlayerProgressService {
     private static final String PLAYERS_COLLECTION = "players";
     private static final String TOKENS_FIELD = "tokens";
     private static final String TOTAL_STARS_FIELD = "totalStars";
+    private static final String WEEKLY_STARS_FIELD = "weeklyStars";
+    private static final String WEEKLY_GAMES_FIELD = "weeklyGames";
+    private static final String WEEKLY_CYCLE_ID_FIELD = "weeklyCycleId";
+    private static final String MONTHLY_STARS_FIELD = "monthlyStars";
+    private static final String MONTHLY_GAMES_FIELD = "monthlyGames";
+    private static final String MONTHLY_CYCLE_ID_FIELD = "monthlyCycleId";
     private static final String LAST_DAILY_TOKEN_GRANT_AT_MS_FIELD = "lastDailyTokenGrantAtMs";
     private static final int DAILY_TOKEN_GRANT = 5;
     private static final int TOKEN_COST_PER_RANKED_MATCH = 1;
     private static final int STARS_PER_TOKEN = 50;
+    private final LeaderboardCycleService cycleService;
+
+    public RankedPlayerProgressService() {
+        this(new LeaderboardCycleService());
+    }
+
+    RankedPlayerProgressService(LeaderboardCycleService cycleService) {
+        this.cycleService = cycleService;
+    }
 
     public TokenCheckResult canJoinRankedQueue(String uid) {
         try {
@@ -103,6 +118,7 @@ public class RankedPlayerProgressService {
             Firestore firestore = FirebaseAdmin.getFirestore();
             DocumentReference player1Ref = firestore.collection(PLAYERS_COLLECTION).document(session.getPlayer1Uid());
             DocumentReference player2Ref = firestore.collection(PLAYERS_COLLECTION).document(session.getPlayer2Uid());
+            LeaderboardCycleService.ActiveCycles cycles = cycleService.getRequiredCurrentCycles();
 
             RewardResult rewardResult = firestore.runTransaction(transaction -> {
                 DocumentSnapshot player1 = transaction.get(player1Ref).get();
@@ -142,8 +158,8 @@ public class RankedPlayerProgressService {
                         player2Reward.starDelta
                 );
 
-                transaction.set(player1Ref, buildRewardUpdate(player1Converted), SetOptions.merge());
-                transaction.set(player2Ref, buildRewardUpdate(player2Converted), SetOptions.merge());
+                transaction.set(player1Ref, buildRewardUpdate(player1, player1Converted, player1Reward.starDelta, cycles), SetOptions.merge());
+                transaction.set(player2Ref, buildRewardUpdate(player2, player2Converted, player2Reward.starDelta, cycles), SetOptions.merge());
 
                 return RewardResult.applied(player1Reward.starDelta, player2Reward.starDelta);
             }).get();
@@ -177,10 +193,37 @@ public class RankedPlayerProgressService {
         return updates;
     }
 
-    private Map<String, Object> buildRewardUpdate(ConvertedProgress progress) {
+    private Map<String, Object> buildRewardUpdate(DocumentSnapshot player,
+                                                  ConvertedProgress progress,
+                                                  int starDelta,
+                                                  LeaderboardCycleService.ActiveCycles cycles) {
         Map<String, Object> updates = new HashMap<>();
         updates.put(TOTAL_STARS_FIELD, progress.stars);
         updates.put(TOKENS_FIELD, progress.tokens);
+
+        int earnedStars = Math.max(0, starDelta);
+        String currentWeeklyCycleId = player.getString(WEEKLY_CYCLE_ID_FIELD);
+        int weeklyStars = cycles.getWeekly().getCycleId().equals(currentWeeklyCycleId)
+                ? readInt(player, WEEKLY_STARS_FIELD, 0)
+                : 0;
+        int weeklyGames = cycles.getWeekly().getCycleId().equals(currentWeeklyCycleId)
+                ? readInt(player, WEEKLY_GAMES_FIELD, 0)
+                : 0;
+
+        String currentMonthlyCycleId = player.getString(MONTHLY_CYCLE_ID_FIELD);
+        int monthlyStars = cycles.getMonthly().getCycleId().equals(currentMonthlyCycleId)
+                ? readInt(player, MONTHLY_STARS_FIELD, 0)
+                : 0;
+        int monthlyGames = cycles.getMonthly().getCycleId().equals(currentMonthlyCycleId)
+                ? readInt(player, MONTHLY_GAMES_FIELD, 0)
+                : 0;
+
+        updates.put(WEEKLY_CYCLE_ID_FIELD, cycles.getWeekly().getCycleId());
+        updates.put(WEEKLY_STARS_FIELD, weeklyStars + earnedStars);
+        updates.put(WEEKLY_GAMES_FIELD, weeklyGames + 1);
+        updates.put(MONTHLY_CYCLE_ID_FIELD, cycles.getMonthly().getCycleId());
+        updates.put(MONTHLY_STARS_FIELD, monthlyStars + earnedStars);
+        updates.put(MONTHLY_GAMES_FIELD, monthlyGames + 1);
         return updates;
     }
 
@@ -420,4 +463,5 @@ public class RankedPlayerProgressService {
             this.tokens = tokens;
         }
     }
+
 }

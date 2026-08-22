@@ -89,14 +89,15 @@ public class NavbarFragment extends Fragment {
         });
 
         view.findViewById(R.id.nav_friends).setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new FriendsFragment())
-                    .addToBackStack(null)
-                    .commit();
+            openFromNavbar(new FriendsFragment());
+        });
 
-            ((MainActivity) requireActivity()).toggleNavbar();
+        view.findViewById(R.id.nav_leaderboard).setOnClickListener(v -> {
+            openFromNavbar(new LeaderboardFragment());
+        });
+
+        view.findViewById(R.id.nav_regions).setOnClickListener(v -> {
+            openFromNavbar(new RegionsFragment());
         });
 
         view.findViewById(R.id.nav_logout).setOnClickListener(v -> {
@@ -117,6 +118,17 @@ public class NavbarFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void openFromNavbar(Fragment fragment) {
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
+
+        ((MainActivity) requireActivity()).toggleNavbar();
     }
 
 }
