@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Base64;
+import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -187,7 +188,7 @@ public class ProfileFragment extends Fragment {
         }
         leagueIcon.setImageResource(LeagueIconResolver.iconFor(player.getLeagueName()));
 
-        displayAvatar(player.getAvatarBase64());
+        displayAvatar(player.getAvatarBase64(), player.getRegionalAvatarFrame());
         displayStatistics(player.getStatistics());
     }
 
@@ -332,7 +333,8 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void displayAvatar(String avatarBase64) {
+    private void displayAvatar(String avatarBase64, String regionalAvatarFrame) {
+        avatarImage.setBackground(createAvatarFrame(regionalAvatarFrame));
         if (avatarBase64 == null || avatarBase64.isEmpty()) {
             avatarImage.setImageResource(R.mipmap.ic_launcher);
             return;
@@ -352,6 +354,28 @@ public class ProfileFragment extends Fragment {
         } catch (Exception e) {
             avatarImage.setImageResource(R.mipmap.ic_launcher);
         }
+    }
+
+    private GradientDrawable createAvatarFrame(String frame) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setColor(Color.rgb(224, 224, 224));
+        drawable.setStroke((int) (6 * getResources().getDisplayMetrics().density), avatarFrameColor(frame));
+        drawable.setCornerRadius(0f);
+        return drawable;
+    }
+
+    private int avatarFrameColor(String frame) {
+        if ("gold".equalsIgnoreCase(frame)) {
+            return Color.rgb(255, 193, 7);
+        }
+        if ("silver".equalsIgnoreCase(frame)) {
+            return Color.rgb(158, 158, 158);
+        }
+        if ("bronze".equalsIgnoreCase(frame)) {
+            return Color.rgb(141, 84, 35);
+        }
+        return Color.rgb(117, 117, 117);
     }
 
     private void logout() {

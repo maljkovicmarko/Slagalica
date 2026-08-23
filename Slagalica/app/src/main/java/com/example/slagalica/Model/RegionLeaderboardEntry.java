@@ -8,6 +8,7 @@ import java.util.List;
 
 public class RegionLeaderboardEntry {
     private final int rank;
+    private final String regionId;
     private final String region;
     private final int iconResId;
     private final int monthlyStars;
@@ -20,6 +21,7 @@ public class RegionLeaderboardEntry {
     private final boolean currentUserRegion;
 
     public RegionLeaderboardEntry(int rank,
+                                  String regionId,
                                   String region,
                                   int iconResId,
                                   int monthlyStars,
@@ -31,6 +33,7 @@ public class RegionLeaderboardEntry {
                                   List<GeoPoint> mapPoints,
                                   boolean currentUserRegion) {
         this.rank = rank;
+        this.regionId = regionId;
         this.region = region;
         this.iconResId = iconResId;
         this.monthlyStars = monthlyStars;
@@ -49,6 +52,10 @@ public class RegionLeaderboardEntry {
 
     public String getRegion() {
         return region;
+    }
+
+    public String getRegionId() {
+        return regionId;
     }
 
     public int getIconResId() {

@@ -117,6 +117,7 @@
     <string name="leaderboard_push_channel_description">Obaveštenja o osvojenim nagradama na rang listama</string>
     <string name="leaderboard_push_title">Osvojena nagrada</string>
     <string name="leaderboard_push_body">Otvorite aplikaciju da preuzmete nagradu sa rang liste.</string>
+    <string name="region_map_marker_snippet">%1$d zvezda, aktivnih igrača: %2$d</string>
 
     <string name="korak_po_korak_title">Korak po korak</string>
 

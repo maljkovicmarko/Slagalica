@@ -23,6 +23,8 @@ public class Player {
     private String monthlyCycleId;
     private int monthlyRank;
     private String leagueName;
+    private String regionalAvatarFrame;
+    private String regionalAvatarFrameCycleId;
     private PlayerStatistics statistics;
 
     public Player() {
@@ -106,6 +108,22 @@ public class Player {
 
     public void setLeagueName(String leagueName) {
         this.leagueName = leagueName;
+    }
+
+    public String getRegionalAvatarFrame() {
+        return regionalAvatarFrame;
+    }
+
+    public void setRegionalAvatarFrame(String regionalAvatarFrame) {
+        this.regionalAvatarFrame = regionalAvatarFrame;
+    }
+
+    public String getRegionalAvatarFrameCycleId() {
+        return regionalAvatarFrameCycleId;
+    }
+
+    public void setRegionalAvatarFrameCycleId(String regionalAvatarFrameCycleId) {
+        this.regionalAvatarFrameCycleId = regionalAvatarFrameCycleId;
     }
 
     public PlayerStatistics getStatistics() {

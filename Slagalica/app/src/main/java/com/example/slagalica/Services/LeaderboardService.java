@@ -247,6 +247,7 @@ public class LeaderboardService {
                         RegionStats stats = statsList.get(index);
                         entries.add(new RegionLeaderboardEntry(
                                 index + 1,
+                                stats.regionKey,
                                 stats.displayName,
                                 Region.iconResIdForKey(stats.iconKey),
                                 stats.monthlyStars,

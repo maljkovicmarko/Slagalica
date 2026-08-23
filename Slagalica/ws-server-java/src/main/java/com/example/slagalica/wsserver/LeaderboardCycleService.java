@@ -342,6 +342,7 @@ public final class LeaderboardCycleService {
                     regionReferences.get(normalizeKey(standing.regionId))
             );
         }
+        applyRegionalAvatarFrames(firestore, cycle, players, standings);
     }
 
     private void writeRegionResultIfMissing(Firestore firestore,
@@ -394,6 +395,44 @@ public final class LeaderboardCycleService {
             transaction.set(resultReference, resultUpdates, SetOptions.merge());
             return null;
         }).get();
+    }
+
+    private void applyRegionalAvatarFrames(Firestore firestore,
+                                           LeaderboardCycle cycle,
+                                           List<QueryDocumentSnapshot> players,
+                                           List<RegionStanding> standings) throws Exception {
+        Map<String, String> frameByRegion = new HashMap<>();
+        for (RegionStanding standing : standings) {
+            if (standing.activePlayers <= 0) {
+                continue;
+            }
+            String frame = avatarFrameForRank(standing.rank);
+            if (frame != null) {
+                frameByRegion.put(normalizeKey(standing.regionId), frame);
+            }
+        }
+
+        for (QueryDocumentSnapshot player : players) {
+            String playerRegionKey = normalizeKey(player.getString("regionId"));
+            String frame = frameByRegion.get(playerRegionKey);
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("regionalAvatarFrame", frame == null ? "" : frame);
+            updates.put("regionalAvatarFrameCycleId", frame == null ? "" : cycle.getCycleId());
+            player.getReference().set(updates, SetOptions.merge()).get();
+        }
+    }
+
+    private String avatarFrameForRank(int rank) {
+        if (rank == 1) {
+            return "gold";
+        }
+        if (rank == 2) {
+            return "silver";
+        }
+        if (rank == 3) {
+            return "bronze";
+        }
+        return null;
     }
 
     private LeaderboardCycle createCurrentCycle(Firestore firestore,
