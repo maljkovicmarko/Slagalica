@@ -1,6 +1,8 @@
 package com.example.slagalica.Model;
 
 public class SystemNotification {
+    public static final String REWARD_ID_PREFIX = "reward:";
+
     private String id;
     private String title;
     private String message;

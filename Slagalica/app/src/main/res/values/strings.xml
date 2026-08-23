@@ -106,6 +106,18 @@
 
     <string name="notifications">Obaveštenja</string>
 
+    <string name="leaderboard_reward_title">Čestitamo!</string>
+    <string name="leaderboard_reward_weekly">Nagrada za nedeljnu rang listu</string>
+    <string name="leaderboard_reward_monthly">Nagrada za mesečnu rang listu</string>
+    <string name="leaderboard_reward_rank">Osvojeno mesto: %1$d.</string>
+    <string name="leaderboard_reward_tokens">+%1$d tokena</string>
+    <string name="leaderboard_reward_accept">Preuzmi nagradu</string>
+    <string name="leaderboard_reward_icon_description">Osvojena nagrada</string>
+    <string name="leaderboard_push_channel_name">Nagrade rang liste</string>
+    <string name="leaderboard_push_channel_description">Obaveštenja o osvojenim nagradama na rang listama</string>
+    <string name="leaderboard_push_title">Osvojena nagrada</string>
+    <string name="leaderboard_push_body">Otvorite aplikaciju da preuzmete nagradu sa rang liste.</string>
+
     <string name="korak_po_korak_title">Korak po korak</string>
 
     <string name="round_label">Runda</string>

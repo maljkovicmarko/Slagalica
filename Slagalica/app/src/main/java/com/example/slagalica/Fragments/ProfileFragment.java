@@ -25,6 +25,7 @@ import com.example.slagalica.Model.PlayerStatistics;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.PlayerService;
 import com.example.slagalica.Util.FriendQrCode;
+import com.example.slagalica.Util.LeagueIconResolver;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -57,6 +58,7 @@ public class ProfileFragment extends Fragment {
     private TextView winsLossesText;
 
     private ImageView avatarImage;
+    private ImageView leagueIcon;
     private Button changeAvatarButton;
     private Button logoutButton;
     private ImageButton menuButton;
@@ -98,6 +100,7 @@ public class ProfileFragment extends Fragment {
         tokensText = view.findViewById(R.id.tokensText);
         starsText = view.findViewById(R.id.starsText);
         leagueText = view.findViewById(R.id.leagueText);
+        leagueIcon = view.findViewById(R.id.leagueIcon);
 
         gameSuccessText = view.findViewById(R.id.gameSuccessText);
         koZnaZnaText = view.findViewById(R.id.koZnaZnaText);
@@ -182,6 +185,7 @@ public class ProfileFragment extends Fragment {
         } else {
             leagueText.setText("No league");
         }
+        leagueIcon.setImageResource(LeagueIconResolver.iconFor(player.getLeagueName()));
 
         displayAvatar(player.getAvatarBase64());
         displayStatistics(player.getStatistics());

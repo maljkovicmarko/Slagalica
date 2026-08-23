@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import com.example.slagalica.Model.LeaderboardEntry;
 import com.example.slagalica.Model.LeaderboardCycle;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.LeaderboardService;
+import com.example.slagalica.Util.LeagueIconResolver;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -144,13 +146,27 @@ public class LeaderboardFragment extends Fragment {
         row.setBackgroundColor(entry.isCurrentUser() ? Color.rgb(255, 248, 225) : Color.TRANSPARENT);
 
         TextView rank = createText("#" + entry.getRank(), 46, true);
+        ImageView leagueIcon = createLeagueIcon(entry.getLeagueName());
         TextView player = createText(entry.getUsername() + "\n" + entry.getLeagueName(), 0, entry.isCurrentUser());
         TextView stars = createText(entry.getStars() + " ★", 72, true);
 
         row.addView(rank);
+        row.addView(leagueIcon);
         row.addView(player);
         row.addView(stars);
         return row;
+    }
+
+    private ImageView createLeagueIcon(String leagueName) {
+        ImageView icon = new ImageView(requireContext());
+        icon.setImageResource(LeagueIconResolver.iconFor(leagueName));
+        icon.setContentDescription(leagueName);
+        icon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dp(32), dp(32));
+        params.setMarginEnd(dp(8));
+        icon.setLayoutParams(params);
+        return icon;
     }
 
     private TextView createText(String text, int widthDp, boolean bold) {
@@ -162,7 +178,7 @@ public class LeaderboardFragment extends Fragment {
             textView.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
         }
 
-        int width = widthDp <= 0 ? 0 : (int) (widthDp * getResources().getDisplayMetrics().density);
+        int width = widthDp <= 0 ? 0 : dp(widthDp);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 widthDp <= 0 ? 0 : width,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -170,5 +186,9 @@ public class LeaderboardFragment extends Fragment {
         params.weight = widthDp <= 0 ? 1 : 0;
         textView.setLayoutParams(params);
         return textView;
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density);
     }
 }

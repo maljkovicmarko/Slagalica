@@ -52,13 +52,6 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/dummyNotificationsButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create dummy notifications"
-        android:layout_marginBottom="16dp" />
-
     <ListView
         android:id="@+id/notificationsListView"
         android:layout_width="match_parent"

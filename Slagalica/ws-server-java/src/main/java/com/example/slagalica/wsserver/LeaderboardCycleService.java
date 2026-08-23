@@ -21,6 +21,11 @@ public final class LeaderboardCycleService {
     private static final String PLAYER_RESULTS_COLLECTION = "playerResults";
     private static final String REGION_RESULTS_COLLECTION = "regionResults";
     private static final String REWARD_NOTIFICATIONS_COLLECTION = "rewardNotifications";
+    private final RewardPushNotificationSender rewardPushNotificationSender;
+
+    public LeaderboardCycleService() {
+        rewardPushNotificationSender = new RewardPushNotificationSender();
+    }
 
     public synchronized ActiveCycles ensureCurrentCycles() throws Exception {
         Firestore firestore = FirebaseAdmin.getFirestore();
@@ -227,7 +232,7 @@ public final class LeaderboardCycleService {
                 .collection(REWARD_NOTIFICATIONS_COLLECTION)
                 .document(safeDocumentId(cycle.getCycleId()));
 
-        firestore.runTransaction(transaction -> {
+        DocumentSnapshot rewardedPlayer = firestore.runTransaction(transaction -> {
             DocumentSnapshot result = transaction.get(resultReference).get();
             DocumentSnapshot player = transaction.get(playerReference).get();
             if (!result.exists()) {
@@ -261,8 +266,17 @@ public final class LeaderboardCycleService {
             resultUpdates.put("rewardApplied", true);
             resultUpdates.put("rewardAppliedAtMs", appliedAtMs);
             transaction.set(resultReference, resultUpdates, SetOptions.merge());
-            return null;
+            return standing.rewardTokens > 0 ? player : null;
         }).get();
+
+        if (rewardedPlayer != null) {
+            rewardPushNotificationSender.sendRewardNotification(
+                    rewardedPlayer,
+                    cycle,
+                    standing.rank,
+                    standing.rewardTokens
+            );
+        }
     }
 
     private void finalizeRegionResults(Firestore firestore,
