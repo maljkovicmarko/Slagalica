@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterFragment">
+    tools:context="Fragments.RegisterFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,12 +36,10 @@
             android:inputType="text"
             android:layout_marginBottom="16dp" />
 
-        <EditText
-            android:id="@+id/regionInput"
+        <Spinner
+            android:id="@+id/regionSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/region"
-            android:inputType="text"
             android:layout_marginBottom="16dp" />
 
         <EditText

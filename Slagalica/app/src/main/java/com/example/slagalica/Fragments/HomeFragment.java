@@ -39,6 +39,8 @@ public class HomeFragment extends Fragment {
 
     private Button profileButton;
     private Button playGameButton;
+    private Button leaderboardButton;
+    private Button regionsButton;
     private Button notificationsButton;
 
     private ImageButton menuButton;
@@ -85,6 +87,8 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         profileButton = view.findViewById(R.id.profileButton);
         playGameButton = view.findViewById(R.id.playGameButton);
+        leaderboardButton = view.findViewById(R.id.leaderboardButton);
+        regionsButton = view.findViewById(R.id.regionsButton);
         notificationsButton = view.findViewById(R.id.notificationsButton);
         menuButton = view.findViewById(R.id.menuButton);
         menuButton.setVisibility(View.VISIBLE);
@@ -98,6 +102,8 @@ public class HomeFragment extends Fragment {
                     .commit();
         });
         playGameButton.setOnClickListener(v -> startMatchmaking());
+        leaderboardButton.setOnClickListener(v -> openFragment(new LeaderboardFragment()));
+        regionsButton.setOnClickListener(v -> openFragment(new RegionsFragment()));
         playGameButton.setOnLongClickListener(v -> {
             showServerUrlDialog();
             return true;
@@ -108,14 +114,18 @@ public class HomeFragment extends Fragment {
         });
 
         notificationsButton.setOnClickListener(v -> {
-            requireActivity()
-                    .getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragmentContainer, new NotificationsFragment())
-                    .addToBackStack(null)
-                    .commit();
+            openFragment(new NotificationsFragment());
         });
         return view;
+    }
+
+    private void openFragment(Fragment fragment) {
+        requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override

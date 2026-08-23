@@ -1,17 +1,30 @@
 package com.example.slagalica.Model;
 
+import com.google.firebase.firestore.GeoPoint;
+
 public class Player {
     private String id;
     private String email;
     private String username;
     private String usernameNormalized;
+    private String regionId;
     private String region;
+    private String regionIconKey;
+    private GeoPoint mapPoint;
     private String avatarBase64;
 
     private int tokens;
     private int totalStars;
+    private int weeklyStars;
+    private int weeklyGames;
+    private String weeklyCycleId;
+    private int monthlyStars;
+    private int monthlyGames;
+    private String monthlyCycleId;
     private int monthlyRank;
     private String leagueName;
+    private String regionalAvatarFrame;
+    private String regionalAvatarFrameCycleId;
     private PlayerStatistics statistics;
 
     public Player() {
@@ -41,12 +54,76 @@ public class Player {
         this.monthlyRank = monthlyRank;
     }
 
+    public int getWeeklyStars() {
+        return weeklyStars;
+    }
+
+    public void setWeeklyStars(int weeklyStars) {
+        this.weeklyStars = weeklyStars;
+    }
+
+    public int getWeeklyGames() {
+        return weeklyGames;
+    }
+
+    public void setWeeklyGames(int weeklyGames) {
+        this.weeklyGames = weeklyGames;
+    }
+
+    public String getWeeklyCycleId() {
+        return weeklyCycleId;
+    }
+
+    public void setWeeklyCycleId(String weeklyCycleId) {
+        this.weeklyCycleId = weeklyCycleId;
+    }
+
+    public int getMonthlyStars() {
+        return monthlyStars;
+    }
+
+    public void setMonthlyStars(int monthlyStars) {
+        this.monthlyStars = monthlyStars;
+    }
+
+    public int getMonthlyGames() {
+        return monthlyGames;
+    }
+
+    public void setMonthlyGames(int monthlyGames) {
+        this.monthlyGames = monthlyGames;
+    }
+
+    public String getMonthlyCycleId() {
+        return monthlyCycleId;
+    }
+
+    public void setMonthlyCycleId(String monthlyCycleId) {
+        this.monthlyCycleId = monthlyCycleId;
+    }
+
     public String getLeagueName() {
         return leagueName;
     }
 
     public void setLeagueName(String leagueName) {
         this.leagueName = leagueName;
+    }
+
+    public String getRegionalAvatarFrame() {
+        return regionalAvatarFrame;
+    }
+
+    public void setRegionalAvatarFrame(String regionalAvatarFrame) {
+        this.regionalAvatarFrame = regionalAvatarFrame;
+    }
+
+    public String getRegionalAvatarFrameCycleId() {
+        return regionalAvatarFrameCycleId;
+    }
+
+    public void setRegionalAvatarFrameCycleId(String regionalAvatarFrameCycleId) {
+        this.regionalAvatarFrameCycleId = regionalAvatarFrameCycleId;
     }
 
     public PlayerStatistics getStatistics() {
@@ -103,6 +180,30 @@ public class Player {
 
     public void setRegion(String region) {
         this.region = region;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
+    }
+
+    public String getRegionIconKey() {
+        return regionIconKey;
+    }
+
+    public void setRegionIconKey(String regionIconKey) {
+        this.regionIconKey = regionIconKey;
+    }
+
+    public GeoPoint getMapPoint() {
+        return mapPoint;
+    }
+
+    public void setMapPoint(GeoPoint mapPoint) {
+        this.mapPoint = mapPoint;
     }
 
     public String getAvatarBase64() {

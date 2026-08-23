@@ -4,11 +4,14 @@ import android.util.Log;
 
 import com.example.slagalica.Model.Player;
 import com.example.slagalica.Model.PlayerStatistics;
+import com.example.slagalica.Model.Region;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.Locale;
+import java.util.Random;
 
 public class PlayerService {
 
@@ -18,15 +21,17 @@ public class PlayerService {
 
     private final FirebaseAuth auth;
     private final FirebaseFirestore db;
+    private final Random random;
 
     public PlayerService() {
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        random = new Random();
     }
 
     public void registerPlayer(String email,
                                String username,
-                               String region,
+                               Region region,
                                String password,
                                Runnable onSuccess,
                                OnFailureCallback onFailure) {
@@ -55,7 +60,7 @@ public class PlayerService {
 
     private void checkLegacyUsernameAndCreate(String email,
                                               String username,
-                                              String region,
+                                              Region region,
                                               String password,
                                               Runnable onSuccess,
                                               OnFailureCallback onFailure) {
@@ -74,7 +79,7 @@ public class PlayerService {
 
     private void createPlayer(String email,
                               String username,
-                              String region,
+                              Region region,
                               String password,
                               Runnable onSuccess,
                               OnFailureCallback onFailure) {
@@ -88,15 +93,18 @@ public class PlayerService {
                         return;
                     }
 
-                    Player player = new Player(
-                            firebaseUser.getUid(),
-                            email,
-                            username,
-                            region
-                    );
+	                    Player player = new Player(
+	                            firebaseUser.getUid(),
+	                            email,
+	                            username,
+	                            region.getDisplayName()
+	                    );
 
-                    player.setUsernameNormalized(normalizeUsername(username));
-                    player.setTokens(120);
+	                    player.setUsernameNormalized(normalizeUsername(username));
+	                    player.setRegionId(region.getRegionId());
+	                    player.setRegionIconKey(region.getIconKey());
+	                    player.setMapPoint(randomPointForRegion(region));
+	                    player.setTokens(120);
                     player.setTotalStars(340);
                     player.setLeagueName("Bronze League");
                     player.setStatistics(createDummyStatistics());
@@ -239,5 +247,23 @@ public class PlayerService {
 
     private String normalizeUsername(String username) {
         return username == null ? "" : username.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private GeoPoint randomPointForRegion(Region region) {
+        GeoPoint center = region.getCenter();
+        if (center == null) {
+            return null;
+        }
+
+        double radiusKm = Math.max(0, region.getRandomRadiusKm());
+        double distanceKm = radiusKm * Math.sqrt(random.nextDouble());
+        double angle = random.nextDouble() * 2 * Math.PI;
+
+        double deltaLat = (distanceKm * Math.cos(angle)) / 111.0;
+        double latRadians = Math.toRadians(center.getLatitude());
+        double lngScale = Math.max(0.1, Math.cos(latRadians));
+        double deltaLng = (distanceKm * Math.sin(angle)) / (111.0 * lngScale);
+
+        return new GeoPoint(center.getLatitude() + deltaLat, center.getLongitude() + deltaLng);
     }
 }

@@ -122,6 +122,7 @@ public class LoginFragment extends Fragment {
                     loginButton.setEnabled(true);
                     if (requireActivity() instanceof MainActivity) {
                         ((MainActivity) requireActivity()).connectGameSocketForCurrentUser();
+                        ((MainActivity) requireActivity()).syncFcmTokenForCurrentUser();
                     }
 
                     requireActivity()
@@ -129,6 +130,9 @@ public class LoginFragment extends Fragment {
                             .beginTransaction()
                             .replace(R.id.fragmentContainer, new HomeFragment())
                             .commit();
+                    if (requireActivity() instanceof MainActivity) {
+                        ((MainActivity) requireActivity()).checkForLeaderboardRewards();
+                    }
                 },
                 errorMessage -> {
                     loginButton.setEnabled(true);

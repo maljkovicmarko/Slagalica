@@ -27,7 +27,6 @@ public class NotificationsFragment extends Fragment {
     private Button allNotificationsButton;
     private Button unreadNotificationsButton;
     private Button readNotificationsButton;
-    private Button dummyNotificationsButton;
 
     private ListView notificationsListView;
 
@@ -55,7 +54,6 @@ public class NotificationsFragment extends Fragment {
         allNotificationsButton = view.findViewById(R.id.allNotificationsButton);
         unreadNotificationsButton = view.findViewById(R.id.unreadNotificationsButton);
         readNotificationsButton = view.findViewById(R.id.readNotificationsButton);
-        dummyNotificationsButton = view.findViewById(R.id.dummyNotificationsButton);
 
         notificationsListView = view.findViewById(R.id.notificationsListView);
 
@@ -68,16 +66,6 @@ public class NotificationsFragment extends Fragment {
         allNotificationsButton.setOnClickListener(v -> loadNotifications("ALL"));
         unreadNotificationsButton.setOnClickListener(v -> loadNotifications("UNREAD"));
         readNotificationsButton.setOnClickListener(v -> loadNotifications("READ"));
-
-        dummyNotificationsButton.setOnClickListener(v -> {
-            notificationService.createDummyNotifications(
-                    () -> {
-                        Toast.makeText(requireContext(), "Dummy notifications created", Toast.LENGTH_SHORT).show();
-                        loadNotifications("ALL");
-                    },
-                    error -> Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-            );
-        });
 
         notificationsListView.setOnItemClickListener((parent, itemView, position, id) -> {
             SystemNotification notification = currentNotifications.get(position);
