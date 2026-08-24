@@ -7,12 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionRegistry {
     private final Map<String, WebSocket> socketsByUid = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> appForegroundByUid = new ConcurrentHashMap<>();
 
     public WebSocket register(String uid, WebSocket connection) {
         if (uid == null || connection == null) {
             return null;
         }
         connection.setAttachment(uid);
+        appForegroundByUid.put(uid, false);
         return socketsByUid.put(uid, connection);
     }
 
@@ -23,6 +25,16 @@ public class ConnectionRegistry {
     public boolean isConnected(String uid) {
         WebSocket socket = getSocket(uid);
         return socket != null && socket.isOpen();
+    }
+
+    public void setAppForeground(String uid, boolean foreground) {
+        if (uid != null && socketsByUid.containsKey(uid)) {
+            appForegroundByUid.put(uid, foreground);
+        }
+    }
+
+    public boolean isAppForeground(String uid) {
+        return isConnected(uid) && Boolean.TRUE.equals(appForegroundByUid.get(uid));
     }
 
     public String getUid(WebSocket connection) {
@@ -38,6 +50,7 @@ public class ConnectionRegistry {
         WebSocket current = socketsByUid.get(uid);
         if (current == connection) {
             socketsByUid.remove(uid);
+            appForegroundByUid.remove(uid);
         }
     }
 }

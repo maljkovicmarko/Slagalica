@@ -12,6 +12,7 @@ dependencies {
     implementation 'org.java-websocket:Java-WebSocket:1.5.6'
     implementation 'org.json:json:20240303'
     runtimeOnly 'org.slf4j:slf4j-simple:2.0.16'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 java {

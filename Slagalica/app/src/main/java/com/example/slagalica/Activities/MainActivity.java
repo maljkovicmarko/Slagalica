@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.slagalica.Fragments.GeneralKnowledgeFragment;
 import com.example.slagalica.Fragments.FriendsFragment;
+import com.example.slagalica.Fragments.ChatFragment;
 import com.example.slagalica.Fragments.LoginFragment;
 import com.example.slagalica.Model.LeaderboardRewardNotification;
 import com.example.slagalica.R;
@@ -94,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermissionIfNeeded();
         handleFriendQrIntent(getIntent());
         handleLeaderboardRewardIntent(getIntent());
+        handleChatIntent(getIntent());
     }
 
     @Override
@@ -102,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         setIntent(intent);
         handleFriendQrIntent(intent);
         handleLeaderboardRewardIntent(intent);
+        handleChatIntent(intent);
     }
 
     @Override
@@ -130,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         webSocketGameClient.connect(firebaseUser.getUid(), new WebSocketGameClient.OnConnected() {
             @Override
             public void onConnected() {
+                webSocketGameClient.setAppForeground(true);
             }
 
             @Override
@@ -165,6 +169,19 @@ public class MainActivity extends AppCompatActivity {
         if (SlagalicaFirebaseMessagingService.ACTION_LEADERBOARD_REWARD.equals(intent.getAction())) {
             checkForLeaderboardRewards();
         }
+    }
+
+    private void handleChatIntent(Intent intent) {
+        if (intent == null
+                || !SlagalicaFirebaseMessagingService.ACTION_REGION_CHAT.equals(intent.getAction())
+                || FirebaseAuth.getInstance().getCurrentUser() == null) {
+            return;
+        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, new ChatFragment())
+                .commit();
+        intent.setAction(null);
     }
 
     public void checkForLeaderboardRewards() {
@@ -286,6 +303,8 @@ public class MainActivity extends AppCompatActivity {
         if (isChangingConfigurations()) {
             return;
         }
+
+        webSocketGameClient.setAppForeground(false);
 
         String activeSessionId = ActiveSessionTracker.getActiveSessionId();
         if (activeSessionId == null) {

@@ -67,6 +67,13 @@
             android:text="@string/regions_title" />
 
         <Button
+            android:id="@+id/chatButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/chat_title" />
+
+        <Button
             android:id="@+id/notificationsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

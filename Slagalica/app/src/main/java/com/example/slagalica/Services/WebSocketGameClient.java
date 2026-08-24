@@ -5,6 +5,8 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
+import com.example.slagalica.Model.ChatMessage;
+
 import org.json.JSONException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -60,6 +62,11 @@ public class WebSocketGameClient {
         void onFailure(String errorMessage);
     }
 
+    public interface OnRegionChatListener {
+        void onMessage(ChatMessage message);
+        void onFailure(String errorMessage);
+    }
+
     private static WebSocketGameClient instance;
 
     private final OkHttpClient httpClient;
@@ -68,6 +75,7 @@ public class WebSocketGameClient {
     private final Map<String, CopyOnWriteArrayList<OnSessionListener>> sessionListeners;
     private final CopyOnWriteArrayList<OnMatchmakingListener> matchmakingListeners;
     private final CopyOnWriteArrayList<OnFriendInviteListener> friendInviteListeners;
+    private final CopyOnWriteArrayList<OnRegionChatListener> regionChatListeners;
     private final Map<String, SessionSnapshot> lastSessionSnapshots;
     private final List<OnConnected> pendingConnectCallbacks;
 
@@ -84,6 +92,7 @@ public class WebSocketGameClient {
         sessionListeners = new ConcurrentHashMap<>();
         matchmakingListeners = new CopyOnWriteArrayList<>();
         friendInviteListeners = new CopyOnWriteArrayList<>();
+        regionChatListeners = new CopyOnWriteArrayList<>();
         lastSessionSnapshots = new ConcurrentHashMap<>();
         pendingConnectCallbacks = new ArrayList<>();
         serverUrl = WebSocketConfig.getDefaultServerUrl();
@@ -210,6 +219,36 @@ public class WebSocketGameClient {
     public ListenerHandle addFriendInviteListener(OnFriendInviteListener listener) {
         friendInviteListeners.add(listener);
         return () -> friendInviteListeners.remove(listener);
+    }
+
+    public ListenerHandle addRegionChatListener(OnRegionChatListener listener) {
+        regionChatListeners.add(listener);
+        return () -> regionChatListeners.remove(listener);
+    }
+
+    public void getRegionChat(OnRequestResult callback) {
+        request("get_region_chat", new JSONObject(), callback);
+    }
+
+    public void sendRegionChatMessage(String text, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("text", text);
+            request("send_region_chat_message", payload, callback);
+        } catch (JSONException e) {
+            if (callback != null) {
+                callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to create chat message.");
+            }
+        }
+    }
+
+    public void setAppForeground(boolean foreground) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("foreground", foreground);
+            request("set_app_foreground", payload, null);
+        } catch (JSONException ignored) {
+        }
     }
 
     public ListenerHandle subscribeSession(String sessionId, OnSessionListener listener) {
@@ -417,6 +456,8 @@ public class WebSocketGameClient {
                 handleFriendInviteCancelled(data);
             } else if ("friend_invite_expired".equals(type)) {
                 handleFriendInviteExpired(data);
+            } else if ("region_chat_message".equals(type)) {
+                handleRegionChatMessage(data);
             }
         } catch (JSONException e) {
             dispatchListenerFailure("Invalid server message.");
@@ -548,6 +589,16 @@ public class WebSocketGameClient {
         }
     }
 
+    private void handleRegionChatMessage(JSONObject data) {
+        ChatMessage message = ChatMessage.fromJson(data);
+        if (message == null) {
+            return;
+        }
+        for (OnRegionChatListener listener : regionChatListeners) {
+            post(() -> listener.onMessage(message));
+        }
+    }
+
     private void notifySessionListeners(String sessionId, SessionSnapshot snapshot) {
         CopyOnWriteArrayList<OnSessionListener> listeners = sessionListeners.get(sessionId);
         if (listeners == null) {
@@ -588,6 +639,9 @@ public class WebSocketGameClient {
             post(() -> listener.onFailure(errorMessage));
         }
         for (OnFriendInviteListener listener : friendInviteListeners) {
+            post(() -> listener.onFailure(errorMessage));
+        }
+        for (OnRegionChatListener listener : regionChatListeners) {
             post(() -> listener.onFailure(errorMessage));
         }
         for (CopyOnWriteArrayList<OnSessionListener> listeners : sessionListeners.values()) {

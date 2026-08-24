@@ -254,6 +254,7 @@
     <string name="nav_friends">Friends</string>
     <string name="nav_leaderboard">Rang</string>
     <string name="nav_regions">Regioni</string>
+    <string name="nav_chat">Čet</string>
 
     <string name="nav_stats">Stats</string>
 
@@ -323,4 +324,20 @@
     <string name="regions_count">Registrovanih regiona: %1$d</string>
     <string name="regions_monthly_count">Mesečna rang lista regiona: %1$d</string>
     <string name="region_stats_message">Prva mesta: %1$d\nDruga mesta: %2$d\nTreća mesta: %3$d\nZvezde u ciklusu: %4$d\nAktivni igrači: %5$d\nRegistrovani igrači: %6$d</string>
+
+    <string name="chat_title">Regionalni čet</string>
+    <string name="chat_region_title">Čet — %1$s</string>
+    <string name="chat_region_fallback">region</string>
+    <string name="chat_loading">Učitavanje poruka…</string>
+    <string name="chat_empty">Još nema poruka u ovom regionu.</string>
+    <string name="chat_realtime_status">Poruke se razmenjuju u realnom vremenu.</string>
+    <string name="chat_connection_failed">Čet trenutno nije dostupan.</string>
+    <string name="chat_login_required">Prijavite se da biste koristili čet.</string>
+    <string name="chat_message_hint">Napišite poruku</string>
+    <string name="chat_send">Pošalji</string>
+    <string name="chat_sender_and_time">%1$s · %2$s</string>
+    <string name="chat_push_channel_name">Regionalni čet</string>
+    <string name="chat_push_channel_description">Obaveštenja o novim porukama iz vašeg regiona</string>
+    <string name="chat_push_title">Nova poruka</string>
+    <string name="chat_push_body">Otvorite aplikaciju da pročitate poruku.</string>
 </resources>
