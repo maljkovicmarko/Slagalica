@@ -100,6 +100,10 @@ public class NavbarFragment extends Fragment {
             openFromNavbar(new RegionsFragment());
         });
 
+        view.findViewById(R.id.nav_chat).setOnClickListener(v -> {
+            openFromNavbar(new ChatFragment());
+        });
+
         view.findViewById(R.id.nav_logout).setOnClickListener(v -> {
             WebSocketGameClient.getInstance().disconnect();
             FirebaseAuth.getInstance().signOut();

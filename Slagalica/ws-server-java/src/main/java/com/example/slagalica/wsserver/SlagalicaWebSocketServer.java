@@ -22,6 +22,8 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
     private final SessionService sessionService;
     private final MatchmakingService matchmakingService;
     private final FriendInviteService friendInviteService;
+    private final RegionChatService regionChatService;
+    private final ChatPushNotificationSender chatPushNotificationSender;
     private final CountDownLatch startupLatch;
 
     private volatile boolean started;
@@ -39,6 +41,8 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         this.sessionService = new SessionService(this::emitSessionState, leaderboardCycleService);
         this.matchmakingService = new MatchmakingService(sessionService, SESSION_TYPE_RANKED);
         this.friendInviteService = new FriendInviteService();
+        this.regionChatService = new RegionChatService();
+        this.chatPushNotificationSender = new ChatPushNotificationSender();
         this.startupLatch = new CountDownLatch(1);
     }
 
@@ -100,6 +104,15 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
                     break;
                 case "cancel_friend_invite":
                     handleCancelFriendInvite(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "get_region_chat":
+                    handleGetRegionChat(conn, protocolMessage.getRequestId());
+                    break;
+                case "send_region_chat_message":
+                    handleSendRegionChatMessage(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "set_app_foreground":
+                    handleSetAppForeground(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
                     break;
                 default:
                     eventSender.reply(conn, protocolMessage.getRequestId(), false, null, "Unknown message type: " + type);
@@ -423,6 +436,59 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         JSONObject data = inviteToJson(invite);
         eventSender.reply(conn, requestId, true, data, null);
         eventSender.sendEventTo(invite.getInviteeUid(), "friend_invite_cancelled", data);
+    }
+
+    private void handleGetRegionChat(WebSocket conn, String requestId) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            eventSender.reply(conn, requestId, true, regionChatService.loadHistory(uid).toJson(), null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableError(exception));
+        }
+    }
+
+    private void handleSendRegionChatMessage(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            RegionChatService.SentMessage result = regionChatService.sendMessage(
+                    uid,
+                    payload.optString("text", null)
+            );
+            JSONObject message = result.getMessage();
+            eventSender.reply(conn, requestId, true, message, null);
+            for (com.google.cloud.firestore.DocumentSnapshot player : result.getRegionPlayers()) {
+                String recipientUid = player.getId();
+                eventSender.sendEventTo(recipientUid, "region_chat_message", message);
+                if (!uid.equals(recipientUid) && !connectionRegistry.isAppForeground(recipientUid)) {
+                    chatPushNotificationSender.send(player, message);
+                }
+            }
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableError(exception));
+        }
+    }
+
+    private void handleSetAppForeground(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        boolean foreground = payload.optBoolean("foreground", false);
+        connectionRegistry.setAppForeground(uid, foreground);
+        JSONObject data = new JSONObject();
+        data.put("foreground", foreground);
+        eventSender.reply(conn, requestId, true, data, null);
+    }
+
+    private String readableError(Exception exception) {
+        String message = exception.getMessage();
+        return message == null || message.isBlank() ? "Greška pri obradi četa." : message;
     }
 
     private SessionState requireAuthorizedSession(WebSocket conn, String requestId, String uid, String sessionId) {

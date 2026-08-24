@@ -42,6 +42,7 @@ public class HomeFragment extends Fragment {
     private Button leaderboardButton;
     private Button regionsButton;
     private Button notificationsButton;
+    private Button chatButton;
 
     private ImageButton menuButton;
     private WebSocketGameClient webSocketGameClient;
@@ -90,6 +91,7 @@ public class HomeFragment extends Fragment {
         leaderboardButton = view.findViewById(R.id.leaderboardButton);
         regionsButton = view.findViewById(R.id.regionsButton);
         notificationsButton = view.findViewById(R.id.notificationsButton);
+        chatButton = view.findViewById(R.id.chatButton);
         menuButton = view.findViewById(R.id.menuButton);
         menuButton.setVisibility(View.VISIBLE);
 
@@ -104,6 +106,7 @@ public class HomeFragment extends Fragment {
         playGameButton.setOnClickListener(v -> startMatchmaking());
         leaderboardButton.setOnClickListener(v -> openFragment(new LeaderboardFragment()));
         regionsButton.setOnClickListener(v -> openFragment(new RegionsFragment()));
+        chatButton.setOnClickListener(v -> openFragment(new ChatFragment()));
         playGameButton.setOnLongClickListener(v -> {
             showServerUrlDialog();
             return true;
