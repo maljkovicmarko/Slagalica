@@ -28,6 +28,49 @@
         android:textColor="#607D8B"
         android:textSize="14sp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Izazovi"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/createChallengeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Postavi izazov" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/challengesStateText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Učitavanje izazova..."
+        android:textColor="#607D8B"
+        android:textSize="13sp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="false"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:id="@+id/challengeRows"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
     <FrameLayout
         android:id="@+id/regionMapContainer"
         android:layout_width="match_parent"

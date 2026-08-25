@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class AssociationsQuestionProvider {
@@ -16,12 +17,21 @@ public class AssociationsQuestionProvider {
     private static final int ROUNDS_TO_SELECT = 2;
 
     public List<AssociationsGameState.RoundState> selectRounds(String player1Uid, String player2Uid) {
+        return selectRounds(player1Uid, player2Uid, new Random());
+    }
+
+    public List<AssociationsGameState.RoundState> selectRounds(String player1Uid, String player2Uid, long seed) {
+        return selectRounds(player1Uid, player2Uid, new Random(seed ^ 0x4153534fL));
+    }
+
+    private List<AssociationsGameState.RoundState> selectRounds(String player1Uid, String player2Uid, Random random) {
         List<AssociationsGameState.RoundState> questionBank = fetchQuestionBank();
         if (questionBank.size() < ROUNDS_TO_SELECT) {
             questionBank = buildFallbackQuestions();
         }
 
-        Collections.shuffle(questionBank);
+        questionBank.sort(java.util.Comparator.comparing(AssociationsGameState.RoundState::getSourceQuestionId));
+        Collections.shuffle(questionBank, random);
         List<AssociationsGameState.RoundState> selected = new ArrayList<>();
         selected.add(copyWithOwner(questionBank.get(0), player1Uid));
         selected.add(copyWithOwner(questionBank.get(1), player2Uid));

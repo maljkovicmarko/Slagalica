@@ -23,6 +23,7 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
     private final MatchmakingService matchmakingService;
     private final FriendInviteService friendInviteService;
     private final RegionChatService regionChatService;
+    private final RegionalChallengeService regionalChallengeService;
     private final ChatPushNotificationSender chatPushNotificationSender;
     private final CountDownLatch startupLatch;
 
@@ -39,6 +40,8 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         this.connectionRegistry = new ConnectionRegistry();
         this.eventSender = new SocketEventSender(connectionRegistry);
         this.sessionService = new SessionService(this::emitSessionState, leaderboardCycleService);
+        this.regionalChallengeService = new RegionalChallengeService(this::emitRegionalChallengeUpdate);
+        this.sessionService.setChallengeRunListener(regionalChallengeService::completeRun);
         this.matchmakingService = new MatchmakingService(sessionService, SESSION_TYPE_RANKED);
         this.friendInviteService = new FriendInviteService();
         this.regionChatService = new RegionChatService();
@@ -113,6 +116,24 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
                     break;
                 case "set_app_foreground":
                     handleSetAppForeground(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "list_regional_challenges":
+                    handleListRegionalChallenges(conn, protocolMessage.getRequestId());
+                    break;
+                case "create_regional_challenge":
+                    handleCreateRegionalChallenge(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "accept_regional_challenge":
+                    handleAcceptRegionalChallenge(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "close_regional_challenge":
+                    handleCloseRegionalChallenge(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "cancel_regional_challenge":
+                    handleCancelRegionalChallenge(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "start_challenge_run":
+                    handleStartChallengeRun(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
                     break;
                 default:
                     eventSender.reply(conn, protocolMessage.getRequestId(), false, null, "Unknown message type: " + type);
@@ -486,6 +507,117 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         eventSender.reply(conn, requestId, true, data, null);
     }
 
+    private void handleListRegionalChallenges(WebSocket conn, String requestId) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            eventSender.reply(conn, requestId, true, regionalChallengeService.listChallenges(uid), null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private void handleCreateRegionalChallenge(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            JSONObject data = new JSONObject();
+            data.put("challenge", regionalChallengeService.createChallenge(
+                    uid,
+                    payload.optInt("stakeStars", -1),
+                    payload.optInt("stakeTokens", -1)
+            ));
+            eventSender.reply(conn, requestId, true, data, null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private void handleAcceptRegionalChallenge(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            JSONObject data = new JSONObject();
+            data.put("challenge", regionalChallengeService.acceptChallenge(uid, payload.optString("challengeId", null)));
+            eventSender.reply(conn, requestId, true, data, null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private void handleCloseRegionalChallenge(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            JSONObject data = new JSONObject();
+            data.put("challenge", regionalChallengeService.closeChallenge(uid, payload.optString("challengeId", null)));
+            eventSender.reply(conn, requestId, true, data, null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private void handleCancelRegionalChallenge(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            JSONObject data = new JSONObject();
+            data.put("challenge", regionalChallengeService.cancelChallenge(uid, payload.optString("challengeId", null)));
+            eventSender.reply(conn, requestId, true, data, null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private void handleStartChallengeRun(WebSocket conn, String requestId, JSONObject payload) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        if (sessionService.isUserInActiveSession(uid)) {
+            eventSender.reply(conn, requestId, false, null, "Već imaš aktivnu partiju.");
+            return;
+        }
+        try {
+            RegionalChallengeService.PreparedRun prepared = regionalChallengeService.prepareRun(
+                    uid,
+                    payload.optString("challengeId", null)
+            );
+            SessionState session = sessionService.createChallengeSession(
+                    prepared.getSessionId(),
+                    uid,
+                    payload.optString("challengeId", null),
+                    prepared.getContentSeed()
+            );
+            JSONObject data = new JSONObject();
+            data.put("challenge", prepared.getChallenge());
+            data.put("session", session.toJson());
+            eventSender.reply(conn, requestId, true, data, null);
+            emitSessionState(session);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableChallengeError(exception));
+        }
+    }
+
+    private String readableChallengeError(Exception exception) {
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage();
+        return message == null || message.isBlank() ? "Greška pri obradi izazova." : message;
+    }
+
     private String readableError(Exception exception) {
         String message = exception.getMessage();
         return message == null || message.isBlank() ? "Greška pri obradi četa." : message;
@@ -566,6 +698,26 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
 
     private void emitSessionStateTo(String uid, SessionState session) {
         eventSender.sendEventTo(uid, "session_state", session.toJson());
+    }
+
+    private void emitRegionalChallengeUpdate(JSONObject challenge) {
+        if (challenge == null) {
+            return;
+        }
+        JSONArray participants = challenge.optJSONArray("participants");
+        if (participants == null) {
+            return;
+        }
+        for (int index = 0; index < participants.length(); index++) {
+            JSONObject participant = participants.optJSONObject(index);
+            if (participant != null) {
+                eventSender.sendEventTo(
+                        participant.optString("uid", null),
+                        "regional_challenge_updated",
+                        challenge
+                );
+            }
+        }
     }
 
     private boolean isAvailableForFriendlyGame(String uid) {

@@ -3,6 +3,7 @@ package com.example.slagalica.Fragments;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,9 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +27,15 @@ import com.example.slagalica.Activities.MainActivity;
 import com.example.slagalica.Model.RegionLeaderboardEntry;
 import com.example.slagalica.R;
 import com.example.slagalica.Services.LeaderboardService;
+import com.example.slagalica.Services.SessionSnapshot;
+import com.example.slagalica.Services.WebSocketConfig;
+import com.example.slagalica.Services.WebSocketGameClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.GeoPoint;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
@@ -43,6 +54,7 @@ import java.util.Map;
 
 public class RegionsFragment extends Fragment {
     private static final long REFRESH_INTERVAL_MS = 120_000L;
+    private static final long CHALLENGE_REFRESH_INTERVAL_MS = 10_000L;
     private static final XYTileSource OSM_TILE_SOURCE = new XYTileSource(
             "OpenStreetMap",
             0,
@@ -59,6 +71,12 @@ public class RegionsFragment extends Fragment {
     private TextView stateText;
     private LinearLayout rowsContainer;
     private MapView mapView;
+    private TextView challengesStateText;
+    private LinearLayout challengeRows;
+    private Button createChallengeButton;
+    private WebSocketGameClient webSocketGameClient;
+    private WebSocketGameClient.ListenerHandle challengeListenerHandle;
+    private String currentUid;
     private final Map<String, List<org.osmdroid.util.GeoPoint>> regionPolygons = createRegionPolygons();
 
     private final Runnable refreshRunnable = new Runnable() {
@@ -69,10 +87,21 @@ public class RegionsFragment extends Fragment {
         }
     };
 
+    private final Runnable challengeRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            loadChallenges();
+            refreshHandler.postDelayed(this, CHALLENGE_REFRESH_INTERVAL_MS);
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         leaderboardService = new LeaderboardService();
+        webSocketGameClient = WebSocketGameClient.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        currentUid = user == null ? null : user.getUid();
         configureOsmDroid(requireContext());
     }
 
@@ -83,6 +112,9 @@ public class RegionsFragment extends Fragment {
         cycleRangeText = view.findViewById(R.id.regionCycleRangeText);
         stateText = view.findViewById(R.id.regionsStateText);
         rowsContainer = view.findViewById(R.id.regionRows);
+        challengesStateText = view.findViewById(R.id.challengesStateText);
+        challengeRows = view.findViewById(R.id.challengeRows);
+        createChallengeButton = view.findViewById(R.id.createChallengeButton);
         FrameLayout mapContainer = view.findViewById(R.id.regionMapContainer);
         mapView = new MapView(requireContext());
         configureMapView();
@@ -92,7 +124,9 @@ public class RegionsFragment extends Fragment {
         ));
 
         menuButton.setOnClickListener(v -> ((MainActivity) requireActivity()).toggleNavbar());
+        createChallengeButton.setOnClickListener(v -> showCreateChallengeDialog());
         loadRegions();
+        connectAndLoadChallenges();
         return view;
     }
 
@@ -104,15 +138,309 @@ public class RegionsFragment extends Fragment {
         }
         refreshHandler.removeCallbacks(refreshRunnable);
         refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+        refreshHandler.removeCallbacks(challengeRefreshRunnable);
+        refreshHandler.postDelayed(challengeRefreshRunnable, CHALLENGE_REFRESH_INTERVAL_MS);
     }
 
     @Override
     public void onPause() {
         refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.removeCallbacks(challengeRefreshRunnable);
         if (mapView != null) {
             mapView.onPause();
         }
         super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (challengeListenerHandle != null) {
+            challengeListenerHandle.remove();
+            challengeListenerHandle = null;
+        }
+        super.onDestroyView();
+    }
+
+    private void connectAndLoadChallenges() {
+        if (currentUid == null) {
+            challengesStateText.setText("Prijavi se da bi video izazove.");
+            createChallengeButton.setEnabled(false);
+            return;
+        }
+        webSocketGameClient.setServerUrl(WebSocketConfig.getServerUrl(requireContext()));
+        webSocketGameClient.connect(currentUid, new WebSocketGameClient.OnConnected() {
+            @Override
+            public void onConnected() {
+                registerChallengeListener();
+                loadChallenges();
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded() && challengesStateText != null) {
+                    challengesStateText.setText("Server izazova nije dostupan.");
+                }
+            }
+        });
+    }
+
+    private void registerChallengeListener() {
+        if (challengeListenerHandle != null) {
+            challengeListenerHandle.remove();
+        }
+        challengeListenerHandle = webSocketGameClient.addRegionalChallengeListener(
+                new WebSocketGameClient.OnRegionalChallengeListener() {
+                    @Override
+                    public void onChallengeUpdated(JSONObject challenge) {
+                        loadChallenges();
+                    }
+
+                    @Override
+                    public void onFailure(String errorMessage) {
+                    }
+                }
+        );
+    }
+
+    private void loadChallenges() {
+        if (!isAdded() || challengesStateText == null || currentUid == null) {
+            return;
+        }
+        webSocketGameClient.listRegionalChallenges(new WebSocketGameClient.OnRequestResult() {
+            @Override
+            public void onSuccess(JSONObject data) {
+                if (isAdded() && challengeRows != null) {
+                    renderChallenges(data.optJSONArray("challenges"));
+                }
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded() && challengesStateText != null) {
+                    challengesStateText.setText(errorMessage);
+                }
+            }
+        });
+    }
+
+    private void renderChallenges(JSONArray challenges) {
+        challengeRows.removeAllViews();
+        if (challenges == null || challenges.length() == 0) {
+            challengesStateText.setText("Trenutno nema izazova.");
+            return;
+        }
+        challengesStateText.setText("Najbolji rezultat je privremen dok se prijave ne zatvore.");
+        for (int index = 0; index < challenges.length(); index++) {
+            JSONObject challenge = challenges.optJSONObject(index);
+            if (challenge != null) {
+                challengeRows.addView(createChallengeCard(challenge));
+            }
+        }
+    }
+
+    private View createChallengeCard(JSONObject challenge) {
+        LinearLayout card = new LinearLayout(requireContext());
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setPadding(dp(14), dp(12), dp(14), dp(12));
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(dp(300), LinearLayout.LayoutParams.WRAP_CONTENT);
+        cardParams.setMargins(0, dp(6), dp(10), dp(10));
+        card.setLayoutParams(cardParams);
+        GradientDrawable background = new GradientDrawable();
+        background.setColor(Color.rgb(250, 250, 250));
+        background.setCornerRadius(dp(12));
+        background.setStroke(dp(1), Color.rgb(210, 210, 210));
+        card.setBackground(background);
+
+        String status = challenge.optString("status", "open");
+        int participantCount = challenge.optInt("participantCount", 0);
+        String creator = challenge.optString("creatorUsername", "Igrač");
+        TextView title = challengeText(creator + " • " + participantCount + "/4", 17, true);
+        card.addView(title);
+        card.addView(challengeText(
+                "Ulog: " + challenge.optInt("stakeStars", 0) + " ★ i "
+                        + challenge.optInt("stakeTokens", 0) + " tokena",
+                14,
+                false
+        ));
+        card.addView(challengeText(challengeStatusText(challenge), 13, false));
+
+        JSONArray participants = challenge.optJSONArray("participants");
+        if (participants != null) {
+            for (int index = 0; index < participants.length(); index++) {
+                JSONObject participant = participants.optJSONObject(index);
+                if (participant == null) {
+                    continue;
+                }
+                String participantStatus = participant.optString("status", "ready");
+                String scoreText = "finished".equals(participantStatus) || "abandoned".equals(participantStatus)
+                        ? " — " + participant.optInt("score", 0) + " poena"
+                        : " — " + runStatusLabel(participantStatus);
+                int rewardStars = participant.optInt("rewardStars", 0);
+                int rewardTokens = participant.optInt("rewardTokens", 0);
+                if ("finished".equals(status) && (rewardStars > 0 || rewardTokens > 0)) {
+                    scoreText += "  (nagrada " + rewardStars + " ★, " + rewardTokens + " tokena)";
+                }
+                String prefix = participant.optString("uid", "").equals(challenge.optString("provisionalWinnerUid", ""))
+                        ? "🏆 "
+                        : participant.optString("uid", "").equals(challenge.optString("provisionalRunnerUpUid", "")) ? "② " : "• ";
+                card.addView(challengeText(prefix + participant.optString("username", "Igrač") + scoreText, 13, false));
+            }
+        }
+
+        LinearLayout actions = new LinearLayout(requireContext());
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+        actions.setPadding(0, dp(6), 0, 0);
+        boolean viewerParticipant = challenge.optBoolean("viewerParticipant", false);
+        String viewerRunStatus = challenge.optString("viewerRunStatus", "");
+        if ("open".equals(status) && !viewerParticipant && participantCount < 4) {
+            actions.addView(actionButton("Prihvati", view -> acceptChallenge(challenge.optString("challengeId"))));
+        }
+        if (viewerParticipant && ("ready".equals(viewerRunStatus) || "running".equals(viewerRunStatus))) {
+            actions.addView(actionButton("Igraj", view -> startChallengeRun(challenge.optString("challengeId"))));
+        }
+        if (currentUid != null && currentUid.equals(challenge.optString("creatorUid")) && "open".equals(status)) {
+            if (participantCount >= 2) {
+                actions.addView(actionButton("Zatvori prijave", view -> closeChallenge(challenge.optString("challengeId"))));
+            } else {
+                actions.addView(actionButton("Otkaži", view -> cancelChallenge(challenge.optString("challengeId"))));
+            }
+        }
+        if (actions.getChildCount() > 0) {
+            card.addView(actions);
+        }
+        return card;
+    }
+
+    private String challengeStatusText(JSONObject challenge) {
+        String status = challenge.optString("status", "open");
+        if ("finished".equals(status)) {
+            return "Završen — nagrade su isplaćene";
+        }
+        if ("cancelled".equals(status)) {
+            return "Otkazan";
+        }
+        String winner = challenge.optString("provisionalWinnerUid", "");
+        if (!winner.isBlank()) {
+            return "Privremena nagrada: " + challenge.optInt("provisionalWinnerStars", 0)
+                    + " ★ i " + challenge.optInt("provisionalWinnerTokens", 0) + " tokena";
+        }
+        return "closed".equals(status) ? "Prijave zatvorene — čekaju se rezultati" : "Prijave su otvorene";
+    }
+
+    private String runStatusLabel(String status) {
+        if ("running".equals(status)) {
+            return "igra";
+        }
+        return "čeka partiju";
+    }
+
+    private TextView challengeText(String value, int sizeSp, boolean bold) {
+        TextView textView = new TextView(requireContext());
+        textView.setText(value);
+        textView.setTextSize(sizeSp);
+        textView.setTextColor(Color.rgb(45, 45, 45));
+        if (bold) {
+            textView.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        }
+        return textView;
+    }
+
+    private Button actionButton(String label, View.OnClickListener listener) {
+        Button button = new Button(requireContext());
+        button.setText(label);
+        button.setTextSize(12);
+        button.setOnClickListener(listener);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        params.setMargins(0, 0, dp(4), 0);
+        button.setLayoutParams(params);
+        return button;
+    }
+
+    private void showCreateChallengeDialog() {
+        LinearLayout content = new LinearLayout(requireContext());
+        content.setOrientation(LinearLayout.HORIZONTAL);
+        content.setPadding(dp(24), dp(8), dp(24), 0);
+        NumberPicker stars = new NumberPicker(requireContext());
+        stars.setMinValue(0);
+        stars.setMaxValue(10);
+        stars.setValue(5);
+        NumberPicker tokens = new NumberPicker(requireContext());
+        tokens.setMinValue(0);
+        tokens.setMaxValue(2);
+        tokens.setValue(1);
+        content.addView(stars, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        content.addView(tokens, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Ulog: zvezde / tokeni")
+                .setView(content)
+                .setPositiveButton("Postavi", (dialog, which) -> {
+                    if (stars.getValue() == 0 && tokens.getValue() == 0) {
+                        Toast.makeText(requireContext(), "Izaberi najmanje jedan ulog.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        createChallenge(stars.getValue(), tokens.getValue());
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void createChallenge(int stars, int tokens) {
+        webSocketGameClient.createRegionalChallenge(stars, tokens, refreshAfterChallengeCommand());
+    }
+
+    private void acceptChallenge(String challengeId) {
+        webSocketGameClient.acceptRegionalChallenge(challengeId, refreshAfterChallengeCommand());
+    }
+
+    private void closeChallenge(String challengeId) {
+        webSocketGameClient.closeRegionalChallenge(challengeId, refreshAfterChallengeCommand());
+    }
+
+    private void cancelChallenge(String challengeId) {
+        webSocketGameClient.cancelRegionalChallenge(challengeId, refreshAfterChallengeCommand());
+    }
+
+    private WebSocketGameClient.OnRequestResult refreshAfterChallengeCommand() {
+        return new WebSocketGameClient.OnRequestResult() {
+            @Override
+            public void onSuccess(JSONObject data) {
+                loadChallenges();
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+    }
+
+    private void startChallengeRun(String challengeId) {
+        webSocketGameClient.startChallengeRun(challengeId, new WebSocketGameClient.OnRequestResult() {
+            @Override
+            public void onSuccess(JSONObject data) {
+                JSONObject session = data.optJSONObject("session");
+                if (session == null || !isAdded()) {
+                    return;
+                }
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, GeneralKnowledgeFragment.newInstance(session.toString()))
+                        .commit();
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private int dp(int value) {
+        return (int) (value * getResources().getDisplayMetrics().density);
     }
 
     private void loadRegions() {

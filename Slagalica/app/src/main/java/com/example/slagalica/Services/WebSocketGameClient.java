@@ -67,6 +67,11 @@ public class WebSocketGameClient {
         void onFailure(String errorMessage);
     }
 
+    public interface OnRegionalChallengeListener {
+        void onChallengeUpdated(JSONObject challenge);
+        void onFailure(String errorMessage);
+    }
+
     private static WebSocketGameClient instance;
 
     private final OkHttpClient httpClient;
@@ -76,6 +81,7 @@ public class WebSocketGameClient {
     private final CopyOnWriteArrayList<OnMatchmakingListener> matchmakingListeners;
     private final CopyOnWriteArrayList<OnFriendInviteListener> friendInviteListeners;
     private final CopyOnWriteArrayList<OnRegionChatListener> regionChatListeners;
+    private final CopyOnWriteArrayList<OnRegionalChallengeListener> regionalChallengeListeners;
     private final Map<String, SessionSnapshot> lastSessionSnapshots;
     private final List<OnConnected> pendingConnectCallbacks;
 
@@ -93,6 +99,7 @@ public class WebSocketGameClient {
         matchmakingListeners = new CopyOnWriteArrayList<>();
         friendInviteListeners = new CopyOnWriteArrayList<>();
         regionChatListeners = new CopyOnWriteArrayList<>();
+        regionalChallengeListeners = new CopyOnWriteArrayList<>();
         lastSessionSnapshots = new ConcurrentHashMap<>();
         pendingConnectCallbacks = new ArrayList<>();
         serverUrl = WebSocketConfig.getDefaultServerUrl();
@@ -224,6 +231,42 @@ public class WebSocketGameClient {
     public ListenerHandle addRegionChatListener(OnRegionChatListener listener) {
         regionChatListeners.add(listener);
         return () -> regionChatListeners.remove(listener);
+    }
+
+    public ListenerHandle addRegionalChallengeListener(OnRegionalChallengeListener listener) {
+        regionalChallengeListeners.add(listener);
+        return () -> regionalChallengeListeners.remove(listener);
+    }
+
+    public void listRegionalChallenges(OnRequestResult callback) {
+        request("list_regional_challenges", new JSONObject(), callback);
+    }
+
+    public void createRegionalChallenge(int stakeStars, int stakeTokens, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("stakeStars", stakeStars);
+            payload.put("stakeTokens", stakeTokens);
+            request("create_regional_challenge", payload, callback);
+        } catch (JSONException exception) {
+            callbackFailure(callback, exception, "Nije moguće napraviti izazov.");
+        }
+    }
+
+    public void acceptRegionalChallenge(String challengeId, OnRequestResult callback) {
+        sendChallengeCommand("accept_regional_challenge", challengeId, callback);
+    }
+
+    public void closeRegionalChallenge(String challengeId, OnRequestResult callback) {
+        sendChallengeCommand("close_regional_challenge", challengeId, callback);
+    }
+
+    public void cancelRegionalChallenge(String challengeId, OnRequestResult callback) {
+        sendChallengeCommand("cancel_regional_challenge", challengeId, callback);
+    }
+
+    public void startChallengeRun(String challengeId, OnRequestResult callback) {
+        sendChallengeCommand("start_challenge_run", challengeId, callback);
     }
 
     public void getRegionChat(OnRequestResult callback) {
@@ -458,6 +501,8 @@ public class WebSocketGameClient {
                 handleFriendInviteExpired(data);
             } else if ("region_chat_message".equals(type)) {
                 handleRegionChatMessage(data);
+            } else if ("regional_challenge_updated".equals(type)) {
+                handleRegionalChallengeUpdated(data);
             }
         } catch (JSONException e) {
             dispatchListenerFailure("Invalid server message.");
@@ -599,6 +644,15 @@ public class WebSocketGameClient {
         }
     }
 
+    private void handleRegionalChallengeUpdated(JSONObject data) {
+        if (data == null) {
+            return;
+        }
+        for (OnRegionalChallengeListener listener : regionalChallengeListeners) {
+            post(() -> listener.onChallengeUpdated(data));
+        }
+    }
+
     private void notifySessionListeners(String sessionId, SessionSnapshot snapshot) {
         CopyOnWriteArrayList<OnSessionListener> listeners = sessionListeners.get(sessionId);
         if (listeners == null) {
@@ -644,6 +698,9 @@ public class WebSocketGameClient {
         for (OnRegionChatListener listener : regionChatListeners) {
             post(() -> listener.onFailure(errorMessage));
         }
+        for (OnRegionalChallengeListener listener : regionalChallengeListeners) {
+            post(() -> listener.onFailure(errorMessage));
+        }
         for (CopyOnWriteArrayList<OnSessionListener> listeners : sessionListeners.values()) {
             for (OnSessionListener listener : listeners) {
                 post(() -> listener.onFailure(errorMessage));
@@ -660,6 +717,23 @@ public class WebSocketGameClient {
             if (callback != null) {
                 callback.onFailure(e.getMessage() != null ? e.getMessage() : "Failed to send friendly game response.");
             }
+        }
+    }
+
+    private void sendChallengeCommand(String type, String challengeId, OnRequestResult callback) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("challengeId", challengeId);
+            request(type, payload, callback);
+        } catch (JSONException exception) {
+            callbackFailure(callback, exception, "Nije moguće poslati zahtev za izazov.");
+        }
+    }
+
+    private void callbackFailure(OnRequestResult callback, Exception exception, String fallback) {
+        if (callback != null) {
+            String message = exception.getMessage();
+            callback.onFailure(message == null || message.isBlank() ? fallback : message);
         }
     }
 

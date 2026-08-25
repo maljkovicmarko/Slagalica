@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class ConnectionsQuestionProvider {
@@ -15,12 +16,21 @@ public class ConnectionsQuestionProvider {
     private static final int ROUNDS_TO_SELECT = 2;
 
     public List<ConnectionsGameState.RoundState> selectRounds(String player1Uid, String player2Uid) {
+        return selectRounds(player1Uid, player2Uid, new Random());
+    }
+
+    public List<ConnectionsGameState.RoundState> selectRounds(String player1Uid, String player2Uid, long seed) {
+        return selectRounds(player1Uid, player2Uid, new Random(seed ^ 0x434f4e4eL));
+    }
+
+    private List<ConnectionsGameState.RoundState> selectRounds(String player1Uid, String player2Uid, Random random) {
         List<ConnectionsGameState.RoundState> questionBank = fetchQuestionBank();
         if (questionBank.size() < ROUNDS_TO_SELECT) {
             questionBank = buildFallbackQuestions();
         }
 
-        Collections.shuffle(questionBank);
+        questionBank.sort(java.util.Comparator.comparing(ConnectionsGameState.RoundState::getSourceQuestionId));
+        Collections.shuffle(questionBank, random);
         List<ConnectionsGameState.RoundState> selected = new ArrayList<>();
         selected.add(copyWithOwner(questionBank.get(0), player1Uid));
         selected.add(copyWithOwner(questionBank.get(1), player2Uid));
