@@ -23,6 +23,7 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
     private final MatchmakingService matchmakingService;
     private final FriendInviteService friendInviteService;
     private final RegionChatService regionChatService;
+    private final DailyMissionService dailyMissionService;
     private final RegionalChallengeService regionalChallengeService;
     private final ChatPushNotificationSender chatPushNotificationSender;
     private final CountDownLatch startupLatch;
@@ -39,7 +40,8 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         super(address);
         this.connectionRegistry = new ConnectionRegistry();
         this.eventSender = new SocketEventSender(connectionRegistry);
-        this.sessionService = new SessionService(this::emitSessionState, leaderboardCycleService);
+        this.dailyMissionService = new DailyMissionService(this::emitDailyMissionsUpdate);
+        this.sessionService = new SessionService(this::emitSessionState, leaderboardCycleService, dailyMissionService);
         this.regionalChallengeService = new RegionalChallengeService(this::emitRegionalChallengeUpdate);
         this.sessionService.setChallengeRunListener(regionalChallengeService::completeRun);
         this.matchmakingService = new MatchmakingService(sessionService, SESSION_TYPE_RANKED);
@@ -113,6 +115,9 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
                     break;
                 case "send_region_chat_message":
                     handleSendRegionChatMessage(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
+                    break;
+                case "get_daily_missions":
+                    handleGetDailyMissions(conn, protocolMessage.getRequestId());
                     break;
                 case "set_app_foreground":
                     handleSetAppForeground(conn, protocolMessage.getRequestId(), protocolMessage.getPayload());
@@ -483,6 +488,7 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
             );
             JSONObject message = result.getMessage();
             eventSender.reply(conn, requestId, true, message, null);
+            completeDailyMission(uid, DailyMissionService.MISSION_SEND_CHAT_MESSAGE);
             for (com.google.cloud.firestore.DocumentSnapshot player : result.getRegionPlayers()) {
                 String recipientUid = player.getId();
                 eventSender.sendEventTo(recipientUid, "region_chat_message", message);
@@ -492,6 +498,18 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
             }
         } catch (Exception exception) {
             eventSender.reply(conn, requestId, false, null, readableError(exception));
+        }
+    }
+
+    private void handleGetDailyMissions(WebSocket conn, String requestId) {
+        String uid = requireUid(conn, requestId);
+        if (uid == null) {
+            return;
+        }
+        try {
+            eventSender.reply(conn, requestId, true, dailyMissionService.getToday(uid), null);
+        } catch (Exception exception) {
+            eventSender.reply(conn, requestId, false, null, readableDailyMissionError(exception));
         }
     }
 
@@ -623,6 +641,15 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
         return message == null || message.isBlank() ? "Greška pri obradi četa." : message;
     }
 
+    private String readableDailyMissionError(Exception exception) {
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage();
+        return message == null || message.isBlank() ? "Dnevne misije trenutno nisu dostupne." : message;
+    }
+
     private SessionState requireAuthorizedSession(WebSocket conn, String requestId, String uid, String sessionId) {
         SessionState session = requireSession(conn, requestId, sessionId);
         if (session == null) {
@@ -717,6 +744,18 @@ public class SlagalicaWebSocketServer extends WebSocketServer {
                         challenge
                 );
             }
+        }
+    }
+
+    private void emitDailyMissionsUpdate(String uid, JSONObject state) {
+        eventSender.sendEventTo(uid, "daily_missions_updated", state);
+    }
+
+    private void completeDailyMission(String uid, String missionId) {
+        try {
+            dailyMissionService.completeMission(uid, missionId);
+        } catch (Exception exception) {
+            System.err.println("Failed to complete daily mission " + missionId + " for player " + uid + ": " + readableDailyMissionError(exception));
         }
     }
 

@@ -255,6 +255,7 @@
     <string name="nav_leaderboard">Rang</string>
     <string name="nav_regions">Regioni</string>
     <string name="nav_chat">Čet</string>
+    <string name="nav_daily_missions">Misije</string>
 
     <string name="nav_stats">Stats</string>
 
@@ -340,4 +341,16 @@
     <string name="chat_push_channel_description">Obaveštenja o novim porukama iz vašeg regiona</string>
     <string name="chat_push_title">Nova poruka</string>
     <string name="chat_push_body">Otvorite aplikaciju da pročitate poruku.</string>
+
+    <string name="daily_missions_title">Dnevne misije</string>
+    <string name="daily_missions_loading">Učitavanje dnevnih misija…</string>
+    <string name="daily_missions_load_failed">Dnevne misije trenutno nisu dostupne.</string>
+    <string name="daily_missions_login_required">Prijavite se da biste videli dnevne misije.</string>
+    <string name="daily_missions_reset_info">Misije za datum: %1$s</string>
+    <string name="daily_missions_progress">%1$d/%2$d rešeno</string>
+    <string name="daily_missions_progress_placeholder">0/3 rešeno</string>
+    <string name="daily_missions_mission_reward">Nagrada: %1$d ★</string>
+    <string name="daily_missions_bonus_pending">Bonus za sve misije: %1$d tokena + %2$d ★</string>
+    <string name="daily_missions_bonus_completed">Bonus preuzet: %1$d tokena + %2$d ★</string>
+    <string name="daily_missions_bonus_pending_placeholder">Bonus za sve misije: 2 tokena + 3 ★</string>
 </resources>

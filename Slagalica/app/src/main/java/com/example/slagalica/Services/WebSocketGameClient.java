@@ -72,6 +72,11 @@ public class WebSocketGameClient {
         void onFailure(String errorMessage);
     }
 
+    public interface OnDailyMissionsListener {
+        void onDailyMissionsUpdated(JSONObject state);
+        void onFailure(String errorMessage);
+    }
+
     private static WebSocketGameClient instance;
 
     private final OkHttpClient httpClient;
@@ -82,6 +87,7 @@ public class WebSocketGameClient {
     private final CopyOnWriteArrayList<OnFriendInviteListener> friendInviteListeners;
     private final CopyOnWriteArrayList<OnRegionChatListener> regionChatListeners;
     private final CopyOnWriteArrayList<OnRegionalChallengeListener> regionalChallengeListeners;
+    private final CopyOnWriteArrayList<OnDailyMissionsListener> dailyMissionsListeners;
     private final Map<String, SessionSnapshot> lastSessionSnapshots;
     private final List<OnConnected> pendingConnectCallbacks;
 
@@ -100,6 +106,7 @@ public class WebSocketGameClient {
         friendInviteListeners = new CopyOnWriteArrayList<>();
         regionChatListeners = new CopyOnWriteArrayList<>();
         regionalChallengeListeners = new CopyOnWriteArrayList<>();
+        dailyMissionsListeners = new CopyOnWriteArrayList<>();
         lastSessionSnapshots = new ConcurrentHashMap<>();
         pendingConnectCallbacks = new ArrayList<>();
         serverUrl = WebSocketConfig.getDefaultServerUrl();
@@ -238,6 +245,11 @@ public class WebSocketGameClient {
         return () -> regionalChallengeListeners.remove(listener);
     }
 
+    public ListenerHandle addDailyMissionsListener(OnDailyMissionsListener listener) {
+        dailyMissionsListeners.add(listener);
+        return () -> dailyMissionsListeners.remove(listener);
+    }
+
     public void listRegionalChallenges(OnRequestResult callback) {
         request("list_regional_challenges", new JSONObject(), callback);
     }
@@ -271,6 +283,10 @@ public class WebSocketGameClient {
 
     public void getRegionChat(OnRequestResult callback) {
         request("get_region_chat", new JSONObject(), callback);
+    }
+
+    public void getDailyMissions(OnRequestResult callback) {
+        request("get_daily_missions", new JSONObject(), callback);
     }
 
     public void sendRegionChatMessage(String text, OnRequestResult callback) {
@@ -503,6 +519,8 @@ public class WebSocketGameClient {
                 handleRegionChatMessage(data);
             } else if ("regional_challenge_updated".equals(type)) {
                 handleRegionalChallengeUpdated(data);
+            } else if ("daily_missions_updated".equals(type)) {
+                handleDailyMissionsUpdated(data);
             }
         } catch (JSONException e) {
             dispatchListenerFailure("Invalid server message.");
@@ -653,6 +671,15 @@ public class WebSocketGameClient {
         }
     }
 
+    private void handleDailyMissionsUpdated(JSONObject data) {
+        if (data == null) {
+            return;
+        }
+        for (OnDailyMissionsListener listener : dailyMissionsListeners) {
+            post(() -> listener.onDailyMissionsUpdated(data));
+        }
+    }
+
     private void notifySessionListeners(String sessionId, SessionSnapshot snapshot) {
         CopyOnWriteArrayList<OnSessionListener> listeners = sessionListeners.get(sessionId);
         if (listeners == null) {
@@ -699,6 +726,9 @@ public class WebSocketGameClient {
             post(() -> listener.onFailure(errorMessage));
         }
         for (OnRegionalChallengeListener listener : regionalChallengeListeners) {
+            post(() -> listener.onFailure(errorMessage));
+        }
+        for (OnDailyMissionsListener listener : dailyMissionsListeners) {
             post(() -> listener.onFailure(errorMessage));
         }
         for (CopyOnWriteArrayList<OnSessionListener> listeners : sessionListeners.values()) {
