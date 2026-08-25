@@ -18,6 +18,7 @@ public class SessionService {
     private final Map<String, Set<String>> sessionIdsByUser = new ConcurrentHashMap<>();
     private final GeneralKnowledgeQuestionProvider generalKnowledgeQuestionProvider;
     private final RankedPlayerProgressService rankedPlayerProgressService;
+    private final DailyMissionService dailyMissionService;
     private final GameEngineRegistry gameEngineRegistry;
     private final MatchEngine matchEngine;
     private final ScheduledExecutorService phaseTimeoutExecutor;
@@ -29,13 +30,20 @@ public class SessionService {
     }
 
     public SessionService(SessionChangeListener sessionChangeListener) {
-        this(sessionChangeListener, new LeaderboardCycleService());
+        this(sessionChangeListener, new LeaderboardCycleService(), new DailyMissionService());
     }
 
     SessionService(SessionChangeListener sessionChangeListener,
                    LeaderboardCycleService leaderboardCycleService) {
+        this(sessionChangeListener, leaderboardCycleService, new DailyMissionService());
+    }
+
+    SessionService(SessionChangeListener sessionChangeListener,
+                   LeaderboardCycleService leaderboardCycleService,
+                   DailyMissionService dailyMissionService) {
         generalKnowledgeQuestionProvider = new GeneralKnowledgeQuestionProvider();
         rankedPlayerProgressService = new RankedPlayerProgressService(leaderboardCycleService);
+        this.dailyMissionService = dailyMissionService;
         gameEngineRegistry = new GameEngineRegistry();
         matchEngine = new MatchEngine();
         phaseTimeoutExecutor = Executors.newSingleThreadScheduledExecutor(runnable -> {
@@ -353,6 +361,7 @@ public class SessionService {
 
     private void applyFinishedSessionResults(SessionState session) {
         applyRankedRewardsIfFinished(session);
+        applyDailyMissionsIfFinished(session);
         if (session == null
                 || !"finished".equals(session.getStatus())
                 || !session.isChallengeRun()
@@ -373,6 +382,37 @@ public class SessionService {
             session.setChallengeResultApplied(true);
         } catch (Exception exception) {
             System.err.println("Failed to persist challenge run " + session.getSessionId() + ": " + exception.getMessage());
+        }
+    }
+
+    private void applyDailyMissionsIfFinished(SessionState session) {
+        if (session == null || !"finished".equals(session.getStatus()) || session.isChallengeRun()) {
+            return;
+        }
+
+        String winnerUid = session.getWinnerUid();
+        if (winnerUid != null && !winnerUid.isBlank()) {
+            completeDailyMission(winnerUid, DailyMissionService.MISSION_WIN_MATCH);
+        }
+
+        if ("friendly".equals(session.getSessionType())) {
+            completeFriendlyMissionIfEligible(session, session.getPlayer1Uid());
+            completeFriendlyMissionIfEligible(session, session.getPlayer2Uid());
+        }
+    }
+
+    private void completeFriendlyMissionIfEligible(SessionState session, String uid) {
+        if (uid == null || uid.equals(session.getAbandonedByUid())) {
+            return;
+        }
+        completeDailyMission(uid, DailyMissionService.MISSION_PLAY_FRIENDLY_MATCH);
+    }
+
+    private void completeDailyMission(String uid, String missionId) {
+        try {
+            dailyMissionService.completeMission(uid, missionId);
+        } catch (Exception exception) {
+            System.err.println("Failed to complete daily mission " + missionId + " for player " + uid + ": " + exception.getMessage());
         }
     }
 

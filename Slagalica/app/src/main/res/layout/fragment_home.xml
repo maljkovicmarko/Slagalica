@@ -74,6 +74,13 @@
             android:text="@string/chat_title" />
 
         <Button
+            android:id="@+id/dailyMissionsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/daily_missions_title" />
+
+        <Button
             android:id="@+id/notificationsButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
