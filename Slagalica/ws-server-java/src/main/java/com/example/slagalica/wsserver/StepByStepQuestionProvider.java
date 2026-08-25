@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class StepByStepQuestionProvider {
@@ -16,12 +17,21 @@ public class StepByStepQuestionProvider {
     private static final int ROUNDS_TO_SELECT = 2;
 
     public List<StepByStepGameState.RoundState> selectRounds(String player1Uid, String player2Uid) {
+        return selectRounds(player1Uid, player2Uid, new Random());
+    }
+
+    public List<StepByStepGameState.RoundState> selectRounds(String player1Uid, String player2Uid, long seed) {
+        return selectRounds(player1Uid, player2Uid, new Random(seed ^ 0x53544550L));
+    }
+
+    private List<StepByStepGameState.RoundState> selectRounds(String player1Uid, String player2Uid, Random random) {
         List<StepByStepGameState.RoundState> questionBank = fetchQuestionBank();
         if (questionBank.size() < ROUNDS_TO_SELECT) {
             questionBank = buildFallbackQuestions();
         }
 
-        Collections.shuffle(questionBank);
+        questionBank.sort(java.util.Comparator.comparing(StepByStepGameState.RoundState::getSourceQuestionId));
+        Collections.shuffle(questionBank, random);
         List<StepByStepGameState.RoundState> selected = new ArrayList<>();
         selected.add(copyWithOwner(questionBank.get(0), player1Uid));
         selected.add(copyWithOwner(questionBank.get(1), player2Uid));

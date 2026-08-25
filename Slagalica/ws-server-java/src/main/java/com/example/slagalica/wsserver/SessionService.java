@@ -22,6 +22,7 @@ public class SessionService {
     private final MatchEngine matchEngine;
     private final ScheduledExecutorService phaseTimeoutExecutor;
     private final SessionChangeListener sessionChangeListener;
+    private ChallengeRunListener challengeRunListener;
 
     public SessionService() {
         this(null);
@@ -94,6 +95,41 @@ public class SessionService {
         return session;
     }
 
+    public SessionState createChallengeSession(String sessionId,
+                                               String playerUid,
+                                               String challengeId,
+                                               long contentSeed) {
+        SessionState existing = requireSession(sessionId);
+        if (existing != null) {
+            return existing;
+        }
+
+        String ghostUid = "__challenge_ghost__:" + sessionId;
+        long createdAtMs = System.currentTimeMillis();
+        SessionState session = new SessionState(
+                sessionId,
+                "challenge_run",
+                playerUid,
+                ghostUid,
+                createdAtMs,
+                new GeneralKnowledgeGameState(generalKnowledgeQuestionProvider.selectQuestions(contentSeed)),
+                challengeId,
+                contentSeed
+        );
+        session.setAbandonedByUid(ghostUid);
+        session.setWinnerUid(playerUid);
+        session.markConnected(ghostUid, false);
+        sessionsById.put(sessionId, session);
+        sessionIdsByUser.computeIfAbsent(playerUid, ignored -> Collections.synchronizedSet(new HashSet<>())).add(sessionId);
+        addSubscriber(sessionId, playerUid);
+        scheduleCurrentPhaseTimeout(session);
+        return session;
+    }
+
+    public void setChallengeRunListener(ChallengeRunListener challengeRunListener) {
+        this.challengeRunListener = challengeRunListener;
+    }
+
     public RankedPlayerProgressService.TokenCheckResult canJoinRankedQueue(String uid) {
         return rankedPlayerProgressService.canJoinRankedQueue(uid);
     }
@@ -134,6 +170,16 @@ public class SessionService {
                 return session;
             }
 
+            if (session.isChallengeRun()) {
+                session.setAbandonedByUid(uid);
+                session.markConnected(uid, false);
+                session.setStatus("finished");
+                session.setTurnState(TurnState.nobody(uid));
+                session.setGamePhase(null);
+                applyFinishedSessionResults(session);
+                return session;
+            }
+
             session.setAbandonedByUid(uid);
             session.setWinnerUid(session.otherPlayer(uid));
             session.markConnected(uid, false);
@@ -146,7 +192,7 @@ public class SessionService {
                 }
             }
             normalizeAbandonedPlayerProgress(session);
-            applyRankedRewardsIfFinished(session);
+            applyFinishedSessionResults(session);
             scheduleCurrentPhaseTimeout(session);
         }
         return session;
@@ -177,7 +223,7 @@ public class SessionService {
             if (result.isAccepted() && result.isSessionChanged()) {
                 matchEngine.advanceIfNeeded(session);
                 normalizeAbandonedPlayerProgress(session);
-                applyRankedRewardsIfFinished(session);
+                applyFinishedSessionResults(session);
                 scheduleCurrentPhaseTimeout(session);
             }
             return new GameActionProcessingResult(session, result);
@@ -251,7 +297,7 @@ public class SessionService {
             if (result.isAccepted() && result.isSessionChanged()) {
                 matchEngine.advanceIfNeeded(session);
                 normalizeAbandonedPlayerProgress(session);
-                applyRankedRewardsIfFinished(session);
+                applyFinishedSessionResults(session);
                 scheduleCurrentPhaseTimeout(session);
             }
         }
@@ -305,6 +351,31 @@ public class SessionService {
         }
     }
 
+    private void applyFinishedSessionResults(SessionState session) {
+        applyRankedRewardsIfFinished(session);
+        if (session == null
+                || !"finished".equals(session.getStatus())
+                || !session.isChallengeRun()
+                || session.isChallengeResultApplied()
+                || challengeRunListener == null) {
+            return;
+        }
+        boolean abandoned = session.getPlayer1Uid().equals(session.getAbandonedByUid());
+        long durationMs = Math.max(0L, System.currentTimeMillis() - session.getCreatedAtMs());
+        try {
+            challengeRunListener.onChallengeRunFinished(
+                    session.getChallengeId(),
+                    session.getPlayer1Uid(),
+                    session.getPlayer1Score(),
+                    durationMs,
+                    abandoned
+            );
+            session.setChallengeResultApplied(true);
+        } catch (Exception exception) {
+            System.err.println("Failed to persist challenge run " + session.getSessionId() + ": " + exception.getMessage());
+        }
+    }
+
     private void normalizeAbandonedPlayerProgress(SessionState session) {
         if (session == null || session.getAbandonedByUid() == null || !"active".equals(session.getStatus())) {
             return;
@@ -352,5 +423,13 @@ public class SessionService {
 
     public interface SessionChangeListener {
         void onSessionChanged(SessionState session);
+    }
+
+    public interface ChallengeRunListener {
+        void onChallengeRunFinished(String challengeId,
+                                    String uid,
+                                    int score,
+                                    long durationMs,
+                                    boolean abandoned) throws Exception;
     }
 }

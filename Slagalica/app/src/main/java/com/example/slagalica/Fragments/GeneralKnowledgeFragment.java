@@ -64,6 +64,7 @@ public class GeneralKnowledgeFragment extends Fragment {
     private int playerOneScore;
     private int playerTwoScore;
     private boolean finishedNavigated;
+    private boolean challengeRun;
     private WebSocketGameClient webSocketGameClient;
     private WebSocketGameClient.ListenerHandle sessionListenerHandle;
 
@@ -156,6 +157,7 @@ public class GeneralKnowledgeFragment extends Fragment {
         }
 
         sessionId = snapshot.getString("sessionId");
+        challengeRun = "challenge_run".equals(snapshot.getString("sessionType"));
         if (isTerminalSession(snapshot)) {
             finishMatch();
             return;
@@ -424,12 +426,13 @@ public class GeneralKnowledgeFragment extends Fragment {
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, new HomeFragment())
+                .replace(R.id.fragmentContainer, challengeRun ? new RegionsFragment() : new HomeFragment())
                 .commit();
     }
 
     private void updateScoreText() {
-        playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
+        playerOneScoreText.setText(challengeRun ? "Moji poeni: " + playerOneScore : "Igrač 1: " + playerOneScore + " bodova");
+        playerTwoScoreText.setVisibility(challengeRun ? View.GONE : View.VISIBLE);
         playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
     }
 

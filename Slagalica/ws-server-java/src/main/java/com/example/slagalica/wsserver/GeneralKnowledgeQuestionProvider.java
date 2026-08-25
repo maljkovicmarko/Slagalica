@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class GeneralKnowledgeQuestionProvider {
@@ -16,12 +17,21 @@ public class GeneralKnowledgeQuestionProvider {
     private static final int QUESTIONS_TO_SELECT = 5;
 
     public List<Question> selectQuestions() {
+        return selectQuestions(new Random());
+    }
+
+    public List<Question> selectQuestions(long seed) {
+        return selectQuestions(new Random(seed ^ 0x474b4cL));
+    }
+
+    private List<Question> selectQuestions(Random random) {
         List<Question> questionBank = fetchQuestionBank();
         if (questionBank.size() < QUESTIONS_TO_SELECT) {
             return buildFallbackQuestions();
         }
 
-        Collections.shuffle(questionBank);
+        questionBank.sort(java.util.Comparator.comparing(Question::getQuestion));
+        Collections.shuffle(questionBank, random);
         return new ArrayList<>(questionBank.subList(0, QUESTIONS_TO_SELECT));
     }
 

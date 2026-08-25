@@ -11,6 +11,8 @@ public class SessionState {
     private final String player1Uid;
     private final String player2Uid;
     private final long createdAtMs;
+    private final String challengeId;
+    private final long challengeContentSeed;
 
     private String status;
     private String winnerUid;
@@ -25,6 +27,7 @@ public class SessionState {
     private GamePhase gamePhase;
     private long nextPhaseVersion;
     private boolean rankedRewardsApplied;
+    private boolean challengeResultApplied;
 
     public SessionState(String sessionId,
                         String sessionType,
@@ -32,11 +35,24 @@ public class SessionState {
                         String player2Uid,
                         long createdAtMs,
                         GameState activeGameState) {
+        this(sessionId, sessionType, player1Uid, player2Uid, createdAtMs, activeGameState, null, 0L);
+    }
+
+    public SessionState(String sessionId,
+                        String sessionType,
+                        String player1Uid,
+                        String player2Uid,
+                        long createdAtMs,
+                        GameState activeGameState,
+                        String challengeId,
+                        long challengeContentSeed) {
         this.sessionId = sessionId;
         this.sessionType = sessionType;
         this.player1Uid = player1Uid;
         this.player2Uid = player2Uid;
         this.createdAtMs = createdAtMs;
+        this.challengeId = challengeId;
+        this.challengeContentSeed = challengeContentSeed;
         this.status = "active";
         this.player1Connected = true;
         this.player2Connected = true;
@@ -54,6 +70,7 @@ public class SessionState {
                 GENERAL_KNOWLEDGE_QUESTION_DURATION_MS
         );
         this.rankedRewardsApplied = false;
+        this.challengeResultApplied = false;
     }
 
     public String getSessionId() {
@@ -74,6 +91,18 @@ public class SessionState {
 
     public long getCreatedAtMs() {
         return createdAtMs;
+    }
+
+    public String getChallengeId() {
+        return challengeId;
+    }
+
+    public long getChallengeContentSeed() {
+        return challengeContentSeed;
+    }
+
+    public boolean isChallengeRun() {
+        return "challenge_run".equals(sessionType) && challengeId != null && !challengeId.isBlank();
     }
 
     public String getStatus() {
@@ -198,6 +227,14 @@ public class SessionState {
         this.rankedRewardsApplied = rankedRewardsApplied;
     }
 
+    public boolean isChallengeResultApplied() {
+        return challengeResultApplied;
+    }
+
+    public void setChallengeResultApplied(boolean challengeResultApplied) {
+        this.challengeResultApplied = challengeResultApplied;
+    }
+
     public boolean containsPlayer(String uid) {
         return uid != null && (uid.equals(player1Uid) || uid.equals(player2Uid));
     }
@@ -238,6 +275,8 @@ public class SessionState {
         json.put("player1Score", player1Score);
         json.put("player2Score", player2Score);
         json.put("createdAtMs", createdAtMs);
+        json.put("challengeId", challengeId == null ? JSONObject.NULL : challengeId);
+        json.put("challengeRun", isChallengeRun());
         json.put("serverNowMs", System.currentTimeMillis());
         json.put("currentGame", getCurrentGame() == null ? JSONObject.NULL : getCurrentGame());
         json.put("currentGameIndex", currentGameIndex);

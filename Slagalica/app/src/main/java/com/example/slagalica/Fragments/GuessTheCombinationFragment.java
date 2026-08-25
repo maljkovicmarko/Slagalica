@@ -75,6 +75,7 @@ public class GuessTheCombinationFragment extends Fragment {
     private boolean canAct;
     private boolean requestInProgress;
     private boolean finishedNavigated;
+    private boolean challengeRun;
     private int currentInputRow;
 
     public GuessTheCombinationFragment() {
@@ -201,6 +202,7 @@ public class GuessTheCombinationFragment extends Fragment {
         }
 
         sessionId = snapshot.getString("sessionId");
+        challengeRun = "challenge_run".equals(snapshot.getString("sessionType"));
         if (isTerminalSession(snapshot)) {
             finishGame();
             return;
@@ -500,7 +502,7 @@ public class GuessTheCombinationFragment extends Fragment {
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, new HomeFragment())
+                .replace(R.id.fragmentContainer, challengeRun ? new RegionsFragment() : new HomeFragment())
                 .commit();
     }
 
@@ -524,7 +526,8 @@ public class GuessTheCombinationFragment extends Fragment {
     }
 
     private void updateScoreText() {
-        playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
+        playerOneScoreText.setText(challengeRun ? "Moji poeni: " + playerOneScore : "Igrač 1: " + playerOneScore + " bodova");
+        playerTwoScoreText.setVisibility(challengeRun ? View.GONE : View.VISIBLE);
         playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
     }
 

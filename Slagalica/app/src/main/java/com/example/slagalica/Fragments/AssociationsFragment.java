@@ -84,6 +84,7 @@ public class AssociationsFragment extends Fragment {
     private boolean canAct;
     private boolean requestInProgress;
     private boolean finishedNavigated;
+    private boolean challengeRun;
 
     public AssociationsFragment() {
     }
@@ -253,6 +254,7 @@ public class AssociationsFragment extends Fragment {
         }
 
         sessionId = snapshot.getString("sessionId");
+        challengeRun = "challenge_run".equals(snapshot.getString("sessionType"));
         if (isTerminalSession(snapshot)) {
             finishMatch();
             return;
@@ -641,12 +643,13 @@ public class AssociationsFragment extends Fragment {
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, new HomeFragment())
+                .replace(R.id.fragmentContainer, challengeRun ? new RegionsFragment() : new HomeFragment())
                 .commit();
     }
 
     private void updateScoreText() {
-        playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
+        playerOneScoreText.setText(challengeRun ? "Moji poeni: " + playerOneScore : "Igrač 1: " + playerOneScore + " bodova");
+        playerTwoScoreText.setVisibility(challengeRun ? View.GONE : View.VISIBLE);
         playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
     }
 

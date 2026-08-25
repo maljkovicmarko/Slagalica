@@ -88,6 +88,7 @@ public class FindTheNumberFragment extends Fragment implements SensorEventListen
     private boolean requestInProgress;
     private boolean submitted;
     private boolean finishedNavigated;
+    private boolean challengeRun;
 
     public FindTheNumberFragment() {
     }
@@ -200,6 +201,7 @@ public class FindTheNumberFragment extends Fragment implements SensorEventListen
         }
 
         sessionId = snapshot.getString("sessionId");
+        challengeRun = "challenge_run".equals(snapshot.getString("sessionType"));
         sessionJson = snapshot.toJson().toString();
         player1Uid = snapshot.getString("player1Uid");
         player2Uid = snapshot.getString("player2Uid");
@@ -455,7 +457,7 @@ public class FindTheNumberFragment extends Fragment implements SensorEventListen
         requireActivity()
                 .getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragmentContainer, new HomeFragment())
+                .replace(R.id.fragmentContainer, challengeRun ? new RegionsFragment() : new HomeFragment())
                 .commit();
     }
 
@@ -465,7 +467,8 @@ public class FindTheNumberFragment extends Fragment implements SensorEventListen
     }
 
     private void updateScoreText() {
-        playerOneScoreText.setText("Igrač 1: " + playerOneScore + " bodova");
+        playerOneScoreText.setText(challengeRun ? "Moji poeni: " + playerOneScore : "Igrač 1: " + playerOneScore + " bodova");
+        playerTwoScoreText.setVisibility(challengeRun ? View.GONE : View.VISIBLE);
         playerTwoScoreText.setText("Igrač 2: " + playerTwoScore + " bodova");
     }
 
